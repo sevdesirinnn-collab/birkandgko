@@ -1,0 +1,4014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#e9f2f2">
+  <title>Birthday Escape</title>
+  <style>
+    :root {
+      --sky-top: #d9eef4;
+      --sky-mid: #edf7f7;
+      --sky-bottom: #f7f2e8;
+      --sea-top: #79d0d2;
+      --sea-mid: #54bcc2;
+      --sea-deep: #3e96ac;
+      --lagoon: #b9ece4;
+      --sand: #f3e7d3;
+      --sand-shadow: #dfceb2;
+      --island-far: #89a79f;
+      --island-mid: #6e8e81;
+      --island-deep: #5d7b6d;
+      --wood-top: #e6c49b;
+      --wood-mid: #cf9e6c;
+      --wood-deep: #b88155;
+      --cake-light: #fff9f3;
+      --cake-mid: #fff0e3;
+      --cake-shadow: #f1dcc8;
+      --icing: #fffef9;
+      --candle: #f7f0e6;
+      --candle-stripe: #ecb49f;
+      --flame-core: #fffdf1;
+      --flame-edge: #ffc972;
+      --ink: #234057;
+      --ink-soft: rgba(35, 64, 87, 0.82);
+      --line: rgba(35, 64, 87, 0.12);
+      --button: #efc6ab;
+      --button-shadow: rgba(220, 166, 138, 0.24);
+      --frond: rgba(47, 74, 63, 0.12);
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --display-font: "Iowan Old Style", "Palatino Linotype", "Baskerville", serif;
+      --body-font: "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: var(--body-font);
+      color: var(--ink);
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 100%);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .experience,
+    .screens {
+      position: relative;
+      min-height: 100dvh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding:
+        max(1.6rem, env(safe-area-inset-top))
+        1.35rem
+        max(1.6rem, env(safe-area-inset-bottom));
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      transform: translateY(22px);
+      transition:
+        opacity 760ms var(--ease),
+        transform 900ms var(--ease),
+        visibility 0s linear 900ms;
+    }
+
+    .screen.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+      transition:
+        opacity 760ms var(--ease),
+        transform 900ms var(--ease),
+        visibility 0s;
+    }
+
+    .screen .animated,
+    .screen .animated::before,
+    .screen .animated::after {
+      animation-play-state: paused;
+    }
+
+    .screen.active .animated,
+    .screen.active .animated::before,
+    .screen.active .animated::after {
+      animation-play-state: running;
+    }
+
+    .screen__content {
+      position: relative;
+      z-index: 2;
+      width: min(100%, 24rem);
+      display: grid;
+      gap: 0.95rem;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .screen__content::before {
+      content: "";
+      position: absolute;
+      inset: -1.75rem -1.5rem;
+      z-index: -1;
+      background: radial-gradient(circle at center, rgba(255, 251, 244, 0.8) 0%, rgba(255, 251, 244, 0.28) 48%, transparent 76%);
+      filter: blur(18px);
+      pointer-events: none;
+    }
+
+    .screen__content--dream,
+    .screen__content--final {
+      width: min(100%, 25rem);
+    }
+
+    .screen__content--intro,
+    .screen__content--wish,
+    .screen__content--final {
+      width: min(100%, 22.5rem);
+      align-self: start;
+      padding-top: clamp(0.5rem, 3.5vh, 1.8rem);
+    }
+
+    .screen__content--intro::before,
+    .screen__content--wish::before,
+    .screen__content--final::before {
+      content: none;
+    }
+
+    .screen__content--intro {
+      gap: 0.72rem;
+      padding: 0 0.2rem;
+      padding-top: clamp(0.8rem, 5vh, 2.5rem);
+    }
+
+    .screen__content--wish {
+      gap: 0.78rem;
+      padding-top: clamp(0.2rem, 1.8vh, 0.9rem);
+    }
+
+    .screen__content--final {
+      gap: 1rem;
+      padding-top: clamp(0.7rem, 4.2vh, 2.2rem);
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-size: 0.72rem;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: rgba(35, 64, 87, 0.58);
+    }
+
+    .screen--intro .eyebrow,
+    .screen--final .eyebrow {
+      color: rgba(52, 77, 89, 0.48);
+    }
+
+    .screen--wish .eyebrow {
+      color: rgba(102, 82, 67, 0.48);
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      font-family: var(--display-font);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      line-height: 1.06;
+      text-wrap: balance;
+      color: var(--ink);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    h1 {
+      font-size: clamp(2.55rem, 11vw, 4.8rem);
+    }
+
+    h2 {
+      font-size: clamp(2.2rem, 9vw, 4.1rem);
+    }
+
+    .lead,
+    .body-copy,
+    .message-line,
+    .hint {
+      margin: 0;
+      font-size: clamp(1rem, 3.8vw, 1.12rem);
+      line-height: 1.68;
+      color: var(--ink-soft);
+      text-wrap: balance;
+    }
+
+    .lead {
+      font-size: clamp(1.08rem, 4vw, 1.22rem);
+    }
+
+    .screen--intro h1 {
+      max-width: 11.5ch;
+      font-size: clamp(3rem, 12vw, 5.1rem);
+      letter-spacing: -0.03em;
+    }
+
+    .screen--intro .lead {
+      max-width: 18rem;
+      color: rgba(35, 64, 87, 0.68);
+    }
+
+    .screen--wish h2,
+    .screen--final h2 {
+      letter-spacing: -0.03em;
+    }
+
+    .screen--wish h2 {
+      max-width: 12ch;
+      color: rgba(71, 52, 40, 0.94);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+
+    .screen--wish .hint {
+      color: rgba(95, 74, 60, 0.68);
+    }
+
+    .screen--final h2 {
+      color: rgba(63, 53, 42, 0.96);
+      text-shadow: none;
+    }
+
+    .button-row,
+    .wish-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      justify-content: center;
+      align-items: center;
+      margin-top: 0.12rem;
+    }
+
+    .button {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.92rem 1.4rem;
+      letter-spacing: 0.02em;
+      color: var(--ink);
+      background: linear-gradient(135deg, #f4cfb8 0%, #eed5b1 100%);
+      box-shadow: 0 16px 30px var(--button-shadow);
+      cursor: pointer;
+      transition:
+        transform 220ms ease,
+        box-shadow 220ms ease,
+        opacity 220ms ease,
+        background 220ms ease;
+    }
+
+    .button:hover,
+    .button:focus-visible {
+      outline: none;
+      transform: translateY(-1px);
+      box-shadow: 0 18px 32px rgba(220, 166, 138, 0.28);
+    }
+
+    .screen--intro .button,
+    .screen--wish .button,
+    .screen--final .button {
+      background: linear-gradient(180deg, #f5decb 0%, #edd7bd 100%);
+      box-shadow: 0 16px 28px rgba(171, 134, 99, 0.16);
+    }
+
+    .screen--intro .button--ghost,
+    .screen--wish .button--ghost,
+    .screen--final .button--ghost {
+      background: rgba(255, 250, 244, 0.84);
+      box-shadow: 0 12px 24px rgba(113, 93, 72, 0.09);
+    }
+
+    .button--ghost {
+      background: rgba(255, 251, 244, 0.72);
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 20px rgba(35, 64, 87, 0.08);
+    }
+
+    .music-toggle {
+      position: fixed;
+      top: max(1rem, env(safe-area-inset-top));
+      right: 1rem;
+      z-index: 10;
+      appearance: none;
+      border: 1px solid rgba(107, 89, 71, 0.14);
+      border-radius: 999px;
+      padding: 0.72rem 1rem;
+      background: rgba(255, 251, 244, 0.8);
+      color: rgba(71, 56, 43, 0.88);
+      box-shadow:
+        0 14px 24px rgba(129, 105, 78, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.42);
+      backdrop-filter: blur(10px);
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition:
+        transform 220ms ease,
+        box-shadow 220ms ease,
+        background 220ms ease,
+        opacity 220ms ease;
+    }
+
+    .music-toggle:hover,
+    .music-toggle:focus-visible {
+      outline: none;
+      transform: translateY(-1px);
+      box-shadow:
+        0 16px 28px rgba(129, 105, 78, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.46);
+    }
+
+    .music-toggle.is-muted {
+      background: rgba(245, 239, 231, 0.84);
+      opacity: 0.86;
+    }
+
+    .continue {
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+    }
+
+    .screen--wish.wish-made .continue {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .screen--wish.wish-made .wish-button {
+      opacity: 0.62;
+    }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 52%, var(--sky-bottom) 100%);
+    }
+
+    .scene::before,
+    .scene::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .scene::before {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.26) 0%, transparent 34%),
+        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.28) 0%, transparent 18%),
+        radial-gradient(circle at 84% 16%, rgba(255, 255, 255, 0.2) 0%, transparent 20%);
+      opacity: 0.9;
+    }
+
+    .scene::after {
+      z-index: 1;
+      background: radial-gradient(circle at center 34%, rgba(255, 251, 244, 0.5) 0%, rgba(255, 251, 244, 0.14) 28%, transparent 62%);
+    }
+
+    .sky,
+    .sun-glow,
+    .sun-disc,
+    .water,
+    .reef,
+    .island,
+    .headland,
+    .shore,
+    .foam,
+    .frond {
+      position: absolute;
+    }
+
+    .sky {
+      inset: 0 0 42%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(239, 248, 248, 0.96) 58%, rgba(239, 248, 248, 0) 100%);
+    }
+
+    .sky::before,
+    .sky::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+
+    .sky::before {
+      background:
+        radial-gradient(circle at 16% 22%, rgba(255, 255, 255, 0.42), transparent 10%),
+        radial-gradient(circle at 38% 14%, rgba(255, 255, 255, 0.34), transparent 12%),
+        radial-gradient(circle at 76% 20%, rgba(255, 255, 255, 0.3), transparent 12%);
+      filter: blur(18px);
+      opacity: 0.68;
+      animation: cloudDrift 26s ease-in-out infinite alternate;
+    }
+
+    .sky::after {
+      inset: -10%;
+      background:
+        linear-gradient(118deg, transparent 0 38%, rgba(255, 255, 255, 0.16) 48%, transparent 58%),
+        linear-gradient(146deg, transparent 0 42%, rgba(255, 255, 255, 0.1) 52%, transparent 62%);
+      opacity: 0.42;
+      animation: lightSweep 28s ease-in-out infinite alternate;
+    }
+
+    .sun-glow,
+    .sun-disc {
+      border-radius: 50%;
+      transform: translateZ(0);
+    }
+
+    .sun-glow {
+      width: 20rem;
+      height: 20rem;
+      top: 3.25rem;
+      right: -4.5rem;
+      background: radial-gradient(circle, rgba(255, 243, 201, 0.68) 0%, rgba(255, 243, 201, 0.2) 34%, transparent 72%);
+      filter: blur(14px);
+      opacity: 0.86;
+      animation: sunBloom 12s ease-in-out infinite alternate;
+    }
+
+    .sun-disc {
+      width: 6.1rem;
+      height: 6.1rem;
+      top: 6.1rem;
+      right: 2.2rem;
+      background: radial-gradient(circle at 42% 38%, #fffdf5 0%, #fff1cb 48%, #fde2a4 76%, rgba(253, 226, 164, 0.08) 84%, transparent 86%);
+      box-shadow:
+        0 0 0 10px rgba(255, 248, 223, 0.12),
+        0 0 36px rgba(255, 236, 181, 0.28);
+      animation: sunLift 14s ease-in-out infinite alternate;
+    }
+
+    .water {
+      inset: 43% 0 17%;
+      background: linear-gradient(180deg, var(--sea-top) 0%, var(--sea-mid) 36%, var(--sea-deep) 100%);
+      overflow: hidden;
+    }
+
+    .water::before,
+    .water::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .water::before {
+      inset: -10% -14%;
+      background:
+        linear-gradient(116deg, transparent 0 34%, rgba(255, 255, 255, 0.3) 46%, transparent 56%),
+        linear-gradient(142deg, transparent 0 44%, rgba(255, 255, 255, 0.14) 52%, transparent 61%),
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px 24px);
+      opacity: 0.58;
+      animation: waterGlide 18s linear infinite;
+    }
+
+    .water::after {
+      left: 10%;
+      right: 10%;
+      top: 8%;
+      height: 34%;
+      background: radial-gradient(ellipse at center, rgba(179, 244, 235, 0.56) 0%, rgba(179, 244, 235, 0.16) 44%, transparent 74%);
+      opacity: 0.9;
+      filter: blur(1px);
+    }
+
+    .reef {
+      left: 22%;
+      right: 22%;
+      bottom: 23%;
+      height: 10%;
+      background: radial-gradient(ellipse at center, rgba(191, 249, 241, 0.84) 0%, rgba(146, 234, 224, 0.54) 44%, rgba(72, 170, 186, 0.12) 72%, transparent 78%);
+      filter: blur(0.8px);
+      opacity: 0.82;
+      animation: reefPulse 15s ease-in-out infinite alternate;
+    }
+
+    .island {
+      background: linear-gradient(180deg, var(--island-far) 0%, var(--island-mid) 100%);
+      filter: saturate(0.92);
+    }
+
+    .island--far {
+      left: 16%;
+      bottom: 34%;
+      width: 24%;
+      height: 7%;
+      opacity: 0.38;
+      filter: blur(1px) saturate(0.84);
+      clip-path: polygon(0 100%, 0 70%, 12% 58%, 24% 46%, 38% 42%, 54% 28%, 70% 34%, 84% 46%, 100% 62%, 100% 100%);
+    }
+
+    .island--mid {
+      right: 2%;
+      bottom: 31%;
+      width: 38%;
+      height: 13%;
+      opacity: 0.8;
+      clip-path: polygon(0 100%, 0 74%, 10% 60%, 22% 48%, 36% 28%, 50% 34%, 64% 16%, 80% 28%, 100% 48%, 100% 100%);
+    }
+
+    .headland {
+      left: -6%;
+      bottom: 24%;
+      width: 28%;
+      height: 15%;
+      background: linear-gradient(180deg, var(--island-mid) 0%, var(--island-deep) 100%);
+      clip-path: polygon(0 100%, 0 66%, 14% 52%, 26% 40%, 42% 28%, 60% 18%, 80% 28%, 100% 48%, 100% 100%);
+      opacity: 0.56;
+    }
+
+    .shore {
+      inset: auto 0 0;
+      height: 20%;
+      background: linear-gradient(180deg, rgba(243, 231, 211, 0) 0%, rgba(243, 231, 211, 0.18) 10%, rgba(243, 231, 211, 0.96) 40%, rgba(233, 216, 187, 1) 100%);
+    }
+
+    .shore::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 16% 18%, rgba(255, 255, 255, 0.18), transparent 24%),
+        radial-gradient(ellipse at 78% 22%, rgba(255, 255, 255, 0.14), transparent 24%);
+      opacity: 0.72;
+    }
+
+    .foam {
+      left: -8%;
+      width: 116%;
+      border-top: 1px solid rgba(255, 255, 255, 0.58);
+      border-radius: 50%;
+      opacity: 0.62;
+      z-index: 0;
+    }
+
+    .foam--a {
+      bottom: 19.2%;
+      height: 4.8rem;
+      animation: shorePulse 10s linear infinite;
+    }
+
+    .foam--b {
+      bottom: 17.1%;
+      height: 4rem;
+      opacity: 0.36;
+      animation: shorePulse 12.5s linear infinite reverse;
+    }
+
+    .frond {
+      width: min(42vw, 15rem);
+      height: auto;
+      color: var(--frond);
+      fill: currentColor;
+      transform-origin: top center;
+      z-index: 0;
+    }
+
+    .frond--left {
+      top: -1.5rem;
+      left: -3rem;
+      transform: rotate(18deg);
+      animation: frondSwayLeft 18s ease-in-out infinite;
+    }
+
+    .frond--right {
+      top: -1.75rem;
+      right: -3rem;
+      transform: scaleX(-1) rotate(15deg);
+      opacity: 0.76;
+      animation: frondSwayRight 18s ease-in-out infinite;
+      animation-delay: -8s;
+    }
+
+    .scene--intro .reef {
+      left: 26%;
+      right: 26%;
+      bottom: 24%;
+      height: 8%;
+      opacity: 0.72;
+    }
+
+    .scene--intro .headland {
+      opacity: 0.48;
+    }
+
+    .scene--wish::after {
+      background: radial-gradient(circle at center 34%, rgba(255, 251, 244, 0.62) 0%, rgba(255, 251, 244, 0.22) 28%, transparent 62%);
+    }
+
+    .scene--wish .water {
+      inset: 42% 0 19%;
+    }
+
+    .scene--wish .reef {
+      opacity: 0.64;
+    }
+
+    .scene--wish .island--far {
+      left: 58%;
+      width: 16%;
+      height: 5%;
+      opacity: 0.26;
+    }
+
+    .scene--wish .island--mid {
+      right: 10%;
+      width: 26%;
+      height: 9%;
+      opacity: 0.46;
+    }
+
+    .scene--wish .headland {
+      display: none;
+    }
+
+    .scene--wish .frond {
+      opacity: 0.62;
+      color: rgba(47, 74, 63, 0.08);
+    }
+
+    .scene--dream::after {
+      background: radial-gradient(circle at center 34%, rgba(255, 251, 244, 0.42) 0%, rgba(255, 251, 244, 0.1) 28%, transparent 66%);
+    }
+
+    .scene--dream .water {
+      inset: 42% 0 10%;
+      background: linear-gradient(180deg, #84d7d6 0%, #55c1c3 34%, #3b95ae 100%);
+    }
+
+    .scene--dream .reef {
+      left: 34%;
+      right: 12%;
+      bottom: 22%;
+      height: 14%;
+      opacity: 0.94;
+    }
+
+    .scene--dream .island--far {
+      left: 8%;
+      width: 20%;
+      height: 6%;
+      opacity: 0.42;
+    }
+
+    .scene--dream .island--mid {
+      right: -1%;
+      bottom: 28%;
+      width: 42%;
+      height: 16%;
+      opacity: 0.9;
+    }
+
+    .scene--dream .headland {
+      left: auto;
+      right: -12%;
+      bottom: 18%;
+      width: 56%;
+      height: 23%;
+      opacity: 0.95;
+      clip-path: polygon(0 100%, 0 66%, 12% 52%, 24% 38%, 36% 20%, 50% 26%, 64% 12%, 82% 26%, 100% 46%, 100% 100%);
+    }
+
+    .scene--dream .shore {
+      left: 44%;
+      right: -8%;
+      bottom: 0;
+      top: auto;
+      height: 27%;
+      background: linear-gradient(180deg, rgba(245, 234, 216, 0) 0%, rgba(245, 234, 216, 0.14) 10%, rgba(245, 234, 216, 0.98) 44%, rgba(233, 216, 187, 1) 100%);
+      clip-path: polygon(18% 0, 54% 8%, 80% 16%, 100% 34%, 100% 100%, 0 100%, 0 54%);
+    }
+
+    .scene--dream .foam--a {
+      left: 38%;
+      width: 72%;
+      bottom: 18.6%;
+    }
+
+    .scene--dream .foam--b {
+      left: 40%;
+      width: 70%;
+      bottom: 16.8%;
+    }
+
+    .scene--dream .frond {
+      color: rgba(47, 74, 63, 0.16);
+    }
+
+    .scene--final .water {
+      inset: 44% 0 18%;
+    }
+
+    .scene--final .reef {
+      left: 30%;
+      right: 30%;
+      bottom: 24%;
+      height: 8%;
+      opacity: 0.6;
+    }
+
+    .scene--final .island--far {
+      left: 60%;
+      width: 18%;
+      height: 5%;
+      opacity: 0.3;
+    }
+
+    .scene--final .island--mid {
+      right: 2%;
+      width: 26%;
+      height: 10%;
+      opacity: 0.46;
+    }
+
+    .scene--final .headland {
+      display: none;
+    }
+
+    .scene--final .shore {
+      height: 18%;
+    }
+
+    .scene--final .frond {
+      color: rgba(47, 74, 63, 0.08);
+    }
+
+    .scene {
+      background: linear-gradient(180deg, #dbeef3 0%, #ebf6f6 42%, #f3efe7 100%);
+    }
+
+    .scene::before {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 32%, rgba(255, 249, 241, 0.08) 100%);
+      opacity: 1;
+      z-index: 0;
+    }
+
+    .scene::after {
+      background: radial-gradient(circle at center 32%, rgba(255, 251, 244, 0.3) 0%, rgba(255, 251, 244, 0.08) 30%, transparent 62%);
+      opacity: 1;
+      z-index: 1;
+    }
+
+    .scene--dream > :not(.cinema-bg) {
+      display: none !important;
+    }
+
+    .scene--intro .cinema-bg,
+    .scene--wish .cinema-bg,
+    .scene--final .cinema-bg {
+      display: none;
+    }
+
+    .scene--intro {
+      background: linear-gradient(180deg, #eef9fb 0%, #dff1ef 38%, #b8dde0 70%, #f0e6d6 100%);
+    }
+
+    .scene--intro::before {
+      background:
+        radial-gradient(circle at 80% 18%, rgba(255, 241, 190, 0.46) 0%, rgba(255, 241, 190, 0.12) 14%, transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.06) 34%, rgba(255, 249, 241, 0.1) 100%),
+        linear-gradient(130deg, rgba(76, 101, 82, 0.06) 2%, transparent 12%, rgba(76, 101, 82, 0.03) 18%, transparent 30%);
+    }
+
+    .scene--intro::after {
+      background:
+        radial-gradient(circle at center 28%, rgba(255, 250, 242, 0.44) 0%, rgba(255, 250, 242, 0.14) 26%, transparent 58%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 250, 243, 0.04) 100%);
+    }
+
+    .scene--intro .sky {
+      inset: 0 0 46%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(236, 248, 248, 0.96) 58%, rgba(236, 248, 248, 0) 100%);
+    }
+
+    .scene--intro .sun-glow {
+      width: 21rem;
+      height: 21rem;
+      top: 1.8rem;
+      right: -5.6rem;
+      background: radial-gradient(circle, rgba(255, 241, 198, 0.66) 0%, rgba(255, 241, 198, 0.18) 36%, transparent 70%);
+    }
+
+    .scene--intro .sun-disc {
+      width: 5.7rem;
+      height: 5.7rem;
+      top: 5rem;
+      right: 2.7rem;
+    }
+
+    .scene--intro .water {
+      inset: 46% 0 17%;
+      background: linear-gradient(180deg, #8ad9da 0%, #56bec1 34%, #348aa3 100%);
+    }
+
+    .scene--intro .reef {
+      left: 32%;
+      right: 24%;
+      bottom: 24%;
+      height: 10%;
+      opacity: 0.78;
+    }
+
+    .scene--intro .island--far {
+      left: 13%;
+      width: 19%;
+      opacity: 0.22;
+    }
+
+    .scene--intro .island--mid {
+      right: -2%;
+      width: 30%;
+      height: 11%;
+      opacity: 0.6;
+    }
+
+    .scene--intro .headland {
+      left: -8%;
+      width: 24%;
+      opacity: 0.4;
+    }
+
+    .scene--intro .shore {
+      height: 16%;
+      background: linear-gradient(180deg, rgba(243, 231, 211, 0) 0%, rgba(243, 231, 211, 0.14) 10%, rgba(243, 231, 211, 0.92) 42%, rgba(229, 214, 186, 1) 100%);
+    }
+
+    .scene--intro .foam {
+      opacity: 0.42;
+    }
+
+    .scene--intro .frond {
+      color: rgba(58, 85, 69, 0.1);
+    }
+
+    .scene--wish {
+      background: linear-gradient(180deg, #fff6eb 0%, #f6ead8 42%, #f0dcc3 74%, #ead8c0 100%);
+    }
+
+    .scene--wish::before {
+      background:
+        radial-gradient(circle at 50% 20%, rgba(255, 235, 184, 0.34) 0%, rgba(255, 235, 184, 0.08) 16%, transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 249, 241, 0.04) 36%, rgba(246, 230, 208, 0.16) 100%);
+    }
+
+    .scene--wish::after {
+      background: radial-gradient(circle at center 36%, rgba(255, 245, 229, 0.54) 0%, rgba(255, 245, 229, 0.18) 26%, transparent 62%);
+    }
+
+    .scene--wish .sky {
+      inset: 0 0 54%;
+      background: linear-gradient(180deg, rgba(255, 253, 247, 0.28) 0%, rgba(255, 244, 233, 0.9) 58%, rgba(255, 244, 233, 0) 100%);
+    }
+
+    .scene--wish .sun-glow {
+      width: 18rem;
+      height: 18rem;
+      top: 2.8rem;
+      right: calc(50% - 9rem);
+      background: radial-gradient(circle, rgba(255, 223, 161, 0.54) 0%, rgba(255, 223, 161, 0.14) 34%, transparent 68%);
+      filter: blur(16px);
+    }
+
+    .scene--wish .sun-disc {
+      width: 4.7rem;
+      height: 4.7rem;
+      top: 6.2rem;
+      right: calc(50% - 2.35rem);
+      opacity: 0.86;
+    }
+
+    .scene--wish .water {
+      inset: 58% 0 23%;
+      background: linear-gradient(180deg, rgba(136, 207, 205, 0.92) 0%, rgba(91, 177, 185, 0.88) 34%, rgba(75, 137, 158, 0.84) 100%);
+    }
+
+    .scene--wish .reef {
+      left: 38%;
+      right: 38%;
+      bottom: 26%;
+      height: 6%;
+      opacity: 0.36;
+    }
+
+    .scene--wish .island--far {
+      left: 18%;
+      bottom: 38%;
+      width: 14%;
+      height: 4%;
+      opacity: 0.16;
+    }
+
+    .scene--wish .island--mid {
+      right: 8%;
+      bottom: 36%;
+      width: 20%;
+      height: 6%;
+      opacity: 0.22;
+    }
+
+    .scene--wish .headland {
+      display: none;
+    }
+
+    .scene--wish .shore {
+      height: 14%;
+      background: linear-gradient(180deg, rgba(241, 226, 201, 0) 0%, rgba(241, 226, 201, 0.08) 16%, rgba(234, 220, 197, 0.7) 50%, rgba(226, 210, 184, 0.92) 100%);
+    }
+
+    .scene--wish .foam {
+      opacity: 0.18;
+    }
+
+    .scene--wish .frond {
+      color: rgba(73, 93, 66, 0.08);
+    }
+
+    .scene--final {
+      background: linear-gradient(180deg, #f9f4eb 0%, #f5efe5 38%, #ebddc9 100%);
+    }
+
+    .scene--final::before {
+      background:
+        radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.12) 18%, transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 248, 240, 0.05) 42%, rgba(243, 229, 208, 0.12) 100%),
+        linear-gradient(128deg, rgba(78, 101, 82, 0.06) 4%, transparent 16%, rgba(78, 101, 82, 0.03) 24%, transparent 36%);
+    }
+
+    .scene--final::after {
+      background: radial-gradient(circle at center 34%, rgba(255, 248, 239, 0.58) 0%, rgba(255, 248, 239, 0.16) 28%, transparent 62%);
+    }
+
+    .scene--final .sky {
+      inset: 0 0 60%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(250, 245, 237, 0.84) 58%, rgba(250, 245, 237, 0) 100%);
+    }
+
+    .scene--final .sun-glow {
+      width: 12rem;
+      height: 12rem;
+      top: 2.4rem;
+      right: -1rem;
+      opacity: 0.48;
+      filter: blur(18px);
+      background: radial-gradient(circle, rgba(255, 232, 183, 0.5) 0%, rgba(255, 232, 183, 0.12) 34%, transparent 70%);
+    }
+
+    .scene--final .sun-disc {
+      width: 3.8rem;
+      height: 3.8rem;
+      top: 5rem;
+      right: 1.6rem;
+      opacity: 0.58;
+      box-shadow:
+        0 0 0 8px rgba(255, 248, 223, 0.08),
+        0 0 24px rgba(255, 236, 181, 0.16);
+    }
+
+    .scene--final .water {
+      inset: 68% 0 14%;
+      background: linear-gradient(180deg, rgba(167, 211, 212, 0.8) 0%, rgba(126, 182, 191, 0.76) 38%, rgba(102, 150, 165, 0.7) 100%);
+    }
+
+    .scene--final .reef {
+      left: 34%;
+      right: 34%;
+      bottom: 18%;
+      height: 5%;
+      opacity: 0.22;
+    }
+
+    .scene--final .island--far {
+      left: 14%;
+      bottom: 26%;
+      width: 16%;
+      height: 4%;
+      opacity: 0.12;
+    }
+
+    .scene--final .island--mid {
+      right: 0;
+      bottom: 24%;
+      width: 20%;
+      height: 7%;
+      opacity: 0.2;
+    }
+
+    .scene--final .headland {
+      display: none;
+    }
+
+    .scene--final .shore {
+      height: 15%;
+      background: linear-gradient(180deg, rgba(243, 231, 211, 0) 0%, rgba(243, 231, 211, 0.1) 10%, rgba(236, 222, 201, 0.66) 42%, rgba(226, 210, 186, 0.88) 100%);
+    }
+
+    .scene--final .foam {
+      opacity: 0.16;
+    }
+
+    .scene--final .frond {
+      color: rgba(58, 83, 67, 0.08);
+    }
+
+    .celebration-field {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .celebration-piece {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      width: var(--size);
+      height: calc(var(--size) * 1.7);
+      border-radius: 58% 42% 64% 36% / 48% 42% 58% 52%;
+      background: var(--piece, rgba(245, 206, 171, 0.66));
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.16) inset,
+        0 10px 18px rgba(255, 255, 255, 0.06);
+      opacity: 0;
+      filter: blur(var(--blur, 0px));
+      transform: translate3d(0, -0.4rem, 0) rotate(var(--rotate, 0deg));
+      animation: celebrationFloat var(--duration, 18s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    .celebration-piece::before {
+      content: "";
+      position: absolute;
+      inset: 12% 28% 54% 28%;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.38);
+      opacity: 0.5;
+    }
+
+    .celebration-piece--dot {
+      width: calc(var(--size) * 0.76);
+      height: calc(var(--size) * 0.76);
+      border-radius: 50%;
+    }
+
+    .celebration-piece--dot::before {
+      inset: 18% 18% 18% 18%;
+      border-radius: 50%;
+    }
+
+    .celebration-piece--ribbon {
+      width: calc(var(--size) * 0.46);
+      height: calc(var(--size) * 2.2);
+      border-radius: 999px;
+    }
+
+    .celebration-field--intro .celebration-piece,
+    .celebration-field--wish .celebration-piece,
+    .celebration-field--final .celebration-piece {
+      mix-blend-mode: multiply;
+    }
+
+    .scene--intro > :not(.intro-stage),
+    .scene--wish > :not(.wish-stage),
+    .scene--final > :not(.final-stage) {
+      display: none !important;
+    }
+
+    .intro-stage,
+    .wish-stage,
+    .final-stage {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .stage-frond {
+      position: absolute;
+      width: min(56vw, 19rem);
+      height: auto;
+      fill: rgba(69, 92, 76, 0.1);
+      filter: blur(0.8px);
+      transform-origin: top center;
+      pointer-events: none;
+    }
+
+    .stage-frond--left {
+      top: -1.5rem;
+      left: -4rem;
+      transform: rotate(18deg);
+      animation: frondSwayLeft 22s ease-in-out infinite;
+    }
+
+    .stage-frond--right {
+      top: -2.4rem;
+      right: -4.4rem;
+      transform: scaleX(-1) rotate(15deg);
+      animation: frondSwayRight 24s ease-in-out infinite;
+      animation-delay: -7s;
+    }
+
+    .intro-stage {
+      background: linear-gradient(180deg, #fbfcf7 0%, #f0f8f4 26%, #d9efee 58%, #96d0d7 80%, #efe2ce 100%);
+    }
+
+    .intro-stage::before,
+    .intro-stage::after,
+    .wish-stage::before,
+    .wish-stage::after,
+    .final-stage::before,
+    .final-stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .intro-stage::before {
+      background:
+        radial-gradient(circle at 80% 16%, rgba(255, 239, 188, 0.68) 0%, rgba(255, 239, 188, 0.16) 12%, transparent 26%),
+        linear-gradient(130deg, rgba(83, 110, 88, 0.08) 3%, transparent 12%, rgba(83, 110, 88, 0.03) 18%, transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.02) 42%, rgba(252, 247, 239, 0.1) 100%);
+    }
+
+    .intro-stage::after {
+      background: radial-gradient(circle at center 20%, rgba(255, 253, 248, 0.58) 0%, rgba(255, 253, 248, 0.12) 22%, transparent 54%);
+    }
+
+    .intro-window {
+      position: absolute;
+      left: 50%;
+      bottom: -0.5rem;
+      width: min(74vw, 19.5rem);
+      height: min(56vh, 23.5rem);
+      transform: translateX(-50%);
+      border-radius: 9rem 9rem 0 0;
+      overflow: hidden;
+      background: linear-gradient(180deg, #fcfefd 0%, #ebf6f5 34%, #a0dadd 66%, #3b91a7 100%);
+      box-shadow:
+        0 28px 48px rgba(100, 130, 126, 0.18),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.36);
+    }
+
+    .intro-window::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 72% 16%, rgba(255, 248, 223, 0.36) 0%, transparent 16%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 32%);
+      pointer-events: none;
+    }
+
+    .intro-window__sky,
+    .intro-window__clouds,
+    .intro-window__sea,
+    .intro-window__island,
+    .intro-window__shore,
+    .intro-window__foam {
+      position: absolute;
+    }
+
+    .intro-window__sky {
+      inset: 0 0 44%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(233, 247, 247, 0.96) 62%, rgba(233, 247, 247, 0) 100%);
+    }
+
+    .intro-window__clouds {
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.58) 0%, transparent 10%),
+        radial-gradient(circle at 44% 14%, rgba(255, 255, 255, 0.42) 0%, transparent 11%),
+        radial-gradient(circle at 76% 18%, rgba(255, 255, 255, 0.44) 0%, transparent 10%);
+      filter: blur(14px);
+      opacity: 0.74;
+      animation: cloudDrift 28s ease-in-out infinite alternate;
+    }
+
+    .intro-window__sea {
+      inset: 46% 0 14%;
+      background: linear-gradient(180deg, #89d9da 0%, #59bfc3 34%, #3389a2 100%);
+      overflow: hidden;
+    }
+
+    .intro-window__sea::before,
+    .intro-window__sea::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .intro-window__sea::before {
+      inset: -12% -18%;
+      background:
+        linear-gradient(116deg, transparent 0 34%, rgba(255, 255, 255, 0.28) 46%, transparent 56%),
+        linear-gradient(142deg, transparent 0 44%, rgba(255, 255, 255, 0.14) 52%, transparent 61%),
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0 2px, transparent 2px 24px);
+      opacity: 0.56;
+      animation: waterGlide 18s linear infinite;
+    }
+
+    .intro-window__sea::after {
+      left: 10%;
+      right: 10%;
+      top: 10%;
+      height: 30%;
+      background: radial-gradient(ellipse at center, rgba(187, 247, 237, 0.54) 0%, rgba(187, 247, 237, 0.16) 48%, transparent 74%);
+      opacity: 0.84;
+      filter: blur(1px);
+    }
+
+    .intro-window__island {
+      background: linear-gradient(180deg, rgba(123, 151, 141, 0.86) 0%, rgba(92, 120, 109, 0.98) 100%);
+    }
+
+    .intro-window__island--a {
+      left: 11%;
+      bottom: 20%;
+      width: 26%;
+      height: 7%;
+      opacity: 0.26;
+      filter: blur(0.8px);
+      clip-path: polygon(0 100%, 0 68%, 12% 56%, 26% 46%, 44% 36%, 62% 32%, 80% 44%, 100% 58%, 100% 100%);
+    }
+
+    .intro-window__island--b {
+      right: -2%;
+      bottom: 17%;
+      width: 36%;
+      height: 11%;
+      opacity: 0.66;
+      clip-path: polygon(0 100%, 0 74%, 14% 58%, 28% 44%, 44% 26%, 58% 34%, 74% 18%, 88% 32%, 100% 48%, 100% 100%);
+    }
+
+    .intro-window__shore {
+      inset: auto 0 0;
+      height: 15%;
+      background: linear-gradient(180deg, rgba(244, 231, 210, 0) 0%, rgba(244, 231, 210, 0.14) 10%, rgba(244, 231, 210, 0.96) 44%, rgba(231, 214, 184, 1) 100%);
+    }
+
+    .intro-window__foam {
+      left: 18%;
+      width: 74%;
+      bottom: 13%;
+      height: 3.2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.58);
+      border-radius: 50%;
+      opacity: 0.54;
+      animation: shorePulse 11s linear infinite;
+    }
+
+    .intro-window__foam::after {
+      content: "";
+      position: absolute;
+      left: 4%;
+      width: 92%;
+      top: 0.9rem;
+      height: 2.6rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.36);
+      border-radius: 50%;
+      opacity: 0.72;
+    }
+
+    .intro-stage .stage-frond {
+      fill: rgba(69, 92, 76, 0.08);
+    }
+
+    .intro-stage .celebration-field {
+      z-index: 2;
+    }
+
+    .intro-stage .celebration-piece,
+    .wish-stage .celebration-piece,
+    .final-stage .celebration-piece {
+      mix-blend-mode: normal;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.18) inset,
+        0 8px 16px rgba(165, 130, 93, 0.08);
+    }
+
+    .wish-stage {
+      background: linear-gradient(180deg, #fff7ef 0%, #f8ecdd 38%, #efdcc3 72%, #e9d2b3 100%);
+    }
+
+    .wish-stage::before {
+      background:
+        radial-gradient(circle at 50% 20%, rgba(255, 223, 160, 0.48) 0%, rgba(255, 223, 160, 0.12) 16%, transparent 30%),
+        linear-gradient(138deg, rgba(93, 82, 67, 0.08) 2%, transparent 12%, rgba(93, 82, 67, 0.03) 20%, transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 251, 244, 0.02) 36%, rgba(244, 228, 206, 0.14) 100%);
+    }
+
+    .wish-stage::after {
+      background: linear-gradient(180deg, transparent 0%, transparent 72%, rgba(176, 134, 96, 0.08) 100%);
+    }
+
+    .wish-niche {
+      position: absolute;
+      left: 50%;
+      bottom: -1rem;
+      width: min(82vw, 21rem);
+      height: min(58vh, 24rem);
+      transform: translateX(-50%);
+      border-radius: 10rem 10rem 0 0;
+      background: linear-gradient(180deg, #fffaf4 0%, #f6e7d5 42%, #ddb797 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.56),
+        0 26px 42px rgba(153, 114, 78, 0.18);
+      overflow: hidden;
+    }
+
+    .wish-niche::before {
+      content: "";
+      position: absolute;
+      left: 18%;
+      right: 18%;
+      top: 11%;
+      bottom: 26%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 224, 162, 0.72) 0%, rgba(255, 224, 162, 0.16) 42%, transparent 72%);
+      filter: blur(2px);
+    }
+
+    .wish-niche::after {
+      content: "";
+      position: absolute;
+      left: 14%;
+      right: 14%;
+      bottom: 12%;
+      height: 1.1rem;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(117, 84, 55, 0.22) 0%, rgba(117, 84, 55, 0.04) 66%, transparent 74%);
+    }
+
+    .wish-floor {
+      position: absolute;
+      inset: auto 0 0;
+      height: 18%;
+      background: linear-gradient(180deg, rgba(226, 199, 167, 0) 0%, rgba(226, 199, 167, 0.14) 18%, rgba(216, 183, 145, 0.48) 62%, rgba(203, 165, 127, 0.72) 100%);
+    }
+
+    .wish-stage .stage-frond {
+      fill: rgba(90, 80, 63, 0.08);
+    }
+
+    .wish-stage .stage-frond--left {
+      top: -2rem;
+      left: -4.8rem;
+    }
+
+    .wish-stage .stage-frond--right {
+      top: -2.8rem;
+      right: -5rem;
+      fill: rgba(90, 80, 63, 0.05);
+    }
+
+    .wish-stage .celebration-field {
+      z-index: 2;
+    }
+
+    .final-stage {
+      background: linear-gradient(180deg, #fbf5ee 0%, #f4eadf 42%, #ead9c2 100%);
+    }
+
+    .final-stage::before {
+      background:
+        linear-gradient(128deg, rgba(79, 101, 84, 0.08) 3%, transparent 14%, rgba(79, 101, 84, 0.03) 22%, transparent 34%),
+        radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.16) 18%, transparent 30%),
+        repeating-linear-gradient(0deg, rgba(122, 94, 67, 0.018) 0 2px, transparent 2px 8px);
+    }
+
+    .final-stage::after {
+      background: radial-gradient(circle at center 32%, rgba(255, 247, 239, 0.56) 0%, rgba(255, 247, 239, 0.12) 26%, transparent 60%);
+    }
+
+    .final-envelope {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(84vw, 22rem);
+      height: 14.5rem;
+      transform: translate(-50%, -46%) rotate(-4deg);
+      border-radius: 1rem;
+      background: linear-gradient(180deg, rgba(244, 234, 221, 0.96) 0%, rgba(234, 218, 196, 0.98) 100%);
+      box-shadow:
+        0 24px 40px rgba(139, 109, 79, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 0.36);
+    }
+
+    .final-envelope::before,
+    .final-envelope::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+    }
+
+    .final-envelope::before {
+      top: 0;
+      height: 58%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent);
+      clip-path: polygon(0 0, 100% 0, 50% 72%);
+      opacity: 0.76;
+    }
+
+    .final-envelope::after {
+      bottom: 0;
+      height: 64%;
+      background: linear-gradient(180deg, rgba(230, 213, 189, 0.12), rgba(214, 190, 160, 0.38));
+      clip-path: polygon(0 100%, 0 34%, 50% 0, 100% 34%, 100% 100%);
+      opacity: 0.82;
+    }
+
+    .final-stage .stage-frond {
+      fill: rgba(69, 92, 76, 0.07);
+    }
+
+    .final-stage .stage-frond--left {
+      top: -1.8rem;
+      left: -5rem;
+    }
+
+    .final-stage .stage-frond--right {
+      top: auto;
+      bottom: -4rem;
+      right: -4.8rem;
+      transform: scaleX(-1) rotate(12deg);
+      fill: rgba(69, 92, 76, 0.05);
+    }
+
+    .final-stage .celebration-field {
+      z-index: 1;
+    }
+
+    .cinema-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      background: linear-gradient(180deg, #b8dee9 0%, #d8edf0 25%, #eaf5f1 50%, #f4eee1 100%);
+    }
+
+    .cinema-bg > * {
+      position: absolute;
+    }
+
+    .cinema-bg::before,
+    .cinema-bg::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .cinema-bg::before {
+      background:
+        radial-gradient(circle at 78% 16%, rgba(255, 243, 201, 0.82) 0%, rgba(255, 243, 201, 0.26) 10%, transparent 24%),
+        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.34) 0%, transparent 12%),
+        radial-gradient(circle at 42% 14%, rgba(255, 255, 255, 0.24) 0%, transparent 14%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 34%);
+      filter: blur(8px);
+      opacity: 0.92;
+    }
+
+    .cinema-bg::after {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 28%, rgba(255, 250, 243, 0.06) 100%);
+      opacity: 0.9;
+    }
+
+    .cinema-water,
+    .cinema-island,
+    .cinema-headland,
+    .cinema-beach,
+    .cinema-wave,
+    .cinema-frond {
+      position: absolute;
+    }
+
+    .cinema-water {
+      inset: 43% 0 16%;
+      background: linear-gradient(180deg, #81d6d5 0%, #58bec2 34%, #3f97ae 100%);
+      overflow: hidden;
+    }
+
+    .cinema-water::before,
+    .cinema-water::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .cinema-water::before {
+      inset: -12% -18%;
+      background:
+        linear-gradient(116deg, transparent 0 34%, rgba(255, 255, 255, 0.24) 44%, transparent 54%),
+        linear-gradient(142deg, transparent 0 46%, rgba(255, 255, 255, 0.12) 54%, transparent 62%),
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0 2px, transparent 2px 28px);
+      opacity: 0.5;
+      animation: cinemaShimmer 36s linear infinite;
+    }
+
+    .cinema-water::after {
+      left: 18%;
+      right: 18%;
+      top: 8%;
+      height: 32%;
+      background: radial-gradient(ellipse at center, rgba(187, 247, 237, 0.5) 0%, rgba(187, 247, 237, 0.16) 46%, transparent 74%);
+      filter: blur(1px);
+      opacity: 0.84;
+      animation: cinemaReflection 18s ease-in-out infinite alternate;
+    }
+
+    .cinema-island {
+      background: linear-gradient(180deg, #88a59e 0%, #6c897f 100%);
+      filter: saturate(0.92);
+    }
+
+    .cinema-island--far {
+      left: 14%;
+      bottom: 34%;
+      width: 22%;
+      height: 6%;
+      opacity: 0.34;
+      filter: blur(1px) saturate(0.84);
+      clip-path: polygon(0 100%, 0 70%, 12% 58%, 24% 46%, 38% 42%, 54% 28%, 70% 34%, 84% 46%, 100% 62%, 100% 100%);
+    }
+
+    .cinema-island--mid {
+      right: 6%;
+      bottom: 30%;
+      width: 38%;
+      height: 12%;
+      opacity: 0.8;
+      clip-path: polygon(0 100%, 0 74%, 10% 60%, 22% 48%, 36% 28%, 50% 34%, 64% 16%, 80% 28%, 100% 48%, 100% 100%);
+    }
+
+    .cinema-headland {
+      left: -4%;
+      bottom: 22%;
+      width: 30%;
+      height: 16%;
+      background: linear-gradient(180deg, #6e897b 0%, #5c7365 100%);
+      clip-path: polygon(0 100%, 0 66%, 14% 52%, 26% 40%, 42% 28%, 60% 18%, 80% 28%, 100% 48%, 100% 100%);
+      opacity: 0.54;
+    }
+
+    .cinema-beach {
+      inset: auto 0 0;
+      height: 20%;
+      background: linear-gradient(180deg, rgba(245, 234, 216, 0) 0%, rgba(245, 234, 216, 0.14) 10%, rgba(245, 234, 216, 0.98) 42%, rgba(234, 216, 188, 1) 100%);
+    }
+
+    .cinema-beach::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 18% 18%, rgba(255, 255, 255, 0.14), transparent 24%),
+        radial-gradient(ellipse at 80% 20%, rgba(255, 255, 255, 0.12), transparent 24%);
+      opacity: 0.76;
+    }
+
+    .cinema-wave {
+      left: -8%;
+      width: 116%;
+      border-top: 1px solid rgba(255, 255, 255, 0.56);
+      border-radius: 50%;
+      opacity: 0.6;
+    }
+
+    .cinema-wave--a {
+      bottom: 18.8%;
+      height: 4.8rem;
+      animation: cinemaWave 12s linear infinite;
+    }
+
+    .cinema-wave--b {
+      bottom: 16.9%;
+      height: 4rem;
+      opacity: 0.34;
+      animation: cinemaWave 14s linear infinite reverse;
+    }
+
+    .cinema-frond {
+      width: min(44vw, 15rem);
+      height: auto;
+      fill: rgba(47, 74, 63, 0.1);
+      transform-origin: top center;
+      z-index: 0;
+    }
+
+    .cinema-frond--left {
+      top: -1.25rem;
+      left: -3rem;
+      animation: cinemaPalmLeft 22s ease-in-out infinite;
+    }
+
+    .cinema-frond--right {
+      top: -1.75rem;
+      right: -3rem;
+      transform: scaleX(-1) rotate(12deg);
+      fill: rgba(47, 74, 63, 0.08);
+      animation: cinemaPalmRight 24s ease-in-out infinite;
+      animation-delay: -6s;
+    }
+
+    .cinema-bg--intro,
+    .cinema-bg--wish,
+    .cinema-bg--final {
+      background:
+        linear-gradient(180deg, #b8dfe9 0%, #d7edf0 23%, #e9f4ef 50%, #f3ede1 100%);
+      filter: saturate(0.93) contrast(1.01);
+    }
+
+    .cinema-bg--intro {
+      background:
+        linear-gradient(180deg, #f9fbf7 0%, #eff6f2 28%, #dbeaec 56%, #e8ede3 100%);
+      background-position: center center;
+      filter: saturate(0.86) contrast(1);
+    }
+
+    .cinema-bg--intro::before {
+      background:
+        radial-gradient(circle at 78% 17%, rgba(255, 239, 195, 0.52) 0%, rgba(255, 239, 195, 0.12) 12%, transparent 28%),
+        linear-gradient(90deg, rgba(255, 252, 247, 0.94) 0%, rgba(255, 252, 247, 0.82) 28%, rgba(255, 252, 247, 0.34) 58%, rgba(255, 252, 247, 0.08) 82%, transparent 96%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 252, 245, 0.08) 100%);
+      filter: none;
+      opacity: 1;
+    }
+
+    .cinema-bg--intro::after {
+      background:
+        linear-gradient(130deg, rgba(78, 103, 82, 0.07) 6%, transparent 18%, rgba(78, 103, 82, 0.04) 26%, transparent 40%),
+        radial-gradient(ellipse at center 110%, rgba(228, 214, 191, 0.56) 0%, transparent 48%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 250, 243, 0.06) 100%);
+      opacity: 1;
+    }
+
+    .cinema-bg--intro .cinema-water {
+      inset: 50% 0 18%;
+      background: linear-gradient(180deg, #c2e5e3 0%, #9fd3d4 34%, #86bfc6 100%);
+    }
+
+    .cinema-bg--intro .cinema-island--far {
+      left: 60%;
+      bottom: 35%;
+      width: 17%;
+      height: 4%;
+      opacity: 0.16;
+    }
+
+    .cinema-bg--intro .cinema-island--mid {
+      right: -6%;
+      bottom: 33%;
+      width: 28%;
+      height: 9%;
+      opacity: 0.34;
+      filter: blur(0.4px) saturate(0.82);
+    }
+
+    .cinema-bg--intro .cinema-headland {
+      left: auto;
+      right: -15%;
+      bottom: 24%;
+      width: 42%;
+      height: 13%;
+      opacity: 0.2;
+      background: linear-gradient(180deg, #789184 0%, #647a6e 100%);
+    }
+
+    .cinema-bg--intro .cinema-beach {
+      height: 16%;
+      background: linear-gradient(180deg, rgba(247, 238, 222, 0) 0%, rgba(247, 238, 222, 0.22) 18%, rgba(245, 235, 217, 0.94) 46%, rgba(229, 216, 191, 1) 100%);
+    }
+
+    .cinema-bg--intro .cinema-wave {
+      opacity: 0.28;
+    }
+
+    .cinema-bg--intro .cinema-frond {
+      fill: rgba(65, 92, 76, 0.06);
+      filter: blur(1px);
+    }
+
+    .cinema-bg--intro .cinema-frond--left {
+      top: -2rem;
+      left: -4.4rem;
+      width: min(58vw, 18rem);
+    }
+
+    .cinema-bg--intro .cinema-frond--right {
+      top: -3rem;
+      right: -4.8rem;
+      width: min(56vw, 17.5rem);
+    }
+
+    .cinema-bg--wish {
+      background:
+        linear-gradient(180deg, #fbf3e8 0%, #f6ede0 34%, #efe1cf 66%, #e8d7c0 100%);
+      background-position: center center;
+      filter: saturate(0.84) contrast(0.99) brightness(1.02);
+    }
+
+    .cinema-bg--wish::before {
+      background:
+        radial-gradient(circle at center 56%, rgba(255, 243, 221, 0.72) 0%, rgba(255, 243, 221, 0.34) 22%, rgba(255, 243, 221, 0.08) 44%, transparent 68%),
+        radial-gradient(circle at 72% 18%, rgba(255, 237, 188, 0.24) 0%, transparent 16%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 248, 240, 0.04) 36%, rgba(246, 230, 208, 0.16) 100%);
+      filter: none;
+      opacity: 1;
+    }
+
+    .cinema-bg--wish::after {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(240, 220, 193, 0.14) 100%),
+        radial-gradient(ellipse at center 88%, rgba(110, 88, 68, 0.08) 0%, transparent 50%);
+      opacity: 1;
+    }
+
+    .cinema-bg--wish .cinema-water {
+      inset: 54% 0 26%;
+      background: linear-gradient(180deg, rgba(158, 208, 207, 0.82) 0%, rgba(119, 179, 186, 0.78) 38%, rgba(96, 148, 166, 0.72) 100%);
+    }
+
+    .cinema-bg--wish .cinema-island--far {
+      left: 14%;
+      bottom: 44%;
+      width: 16%;
+      height: 3.4%;
+      opacity: 0.16;
+    }
+
+    .cinema-bg--wish .cinema-island--mid {
+      right: 2%;
+      bottom: 42%;
+      width: 24%;
+      height: 6%;
+      opacity: 0.24;
+      filter: blur(0.6px) saturate(0.85);
+    }
+
+    .cinema-bg--wish .cinema-headland {
+      display: none;
+    }
+
+    .cinema-bg--wish .cinema-beach {
+      height: 14%;
+      background: linear-gradient(180deg, rgba(244, 229, 205, 0) 0%, rgba(244, 229, 205, 0.08) 20%, rgba(236, 221, 198, 0.68) 54%, rgba(227, 210, 184, 0.88) 100%);
+    }
+
+    .cinema-bg--wish .cinema-wave {
+      opacity: 0.14;
+    }
+
+    .cinema-bg--wish .cinema-frond {
+      fill: rgba(77, 94, 70, 0.05);
+      filter: blur(1px);
+    }
+
+    .cinema-bg--wish .cinema-frond--left {
+      top: -3rem;
+      left: -5.2rem;
+      width: min(62vw, 18.5rem);
+    }
+
+    .cinema-bg--wish .cinema-frond--right {
+      display: none;
+    }
+
+    .cinema-bg--dream {
+      background: #d7e8e8;
+    }
+
+    .cinema-bg--dream > :not(.dream-video) {
+      display: none;
+    }
+
+    .dream-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      object-position: center center;
+      filter: saturate(0.96) contrast(1.02) brightness(1.03);
+    }
+
+    .cinema-bg--dream::before {
+      background:
+        linear-gradient(90deg, rgba(255, 251, 244, 0.92) 0%, rgba(255, 251, 244, 0.84) 24%, rgba(255, 251, 244, 0.44) 48%, rgba(255, 251, 244, 0.12) 72%, rgba(255, 251, 244, 0.03) 88%, transparent 100%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 34%, rgba(255, 250, 243, 0.08) 100%);
+      filter: none;
+      opacity: 1;
+    }
+
+    .cinema-bg--dream::after {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 250, 243, 0.08) 100%),
+        radial-gradient(circle at 74% 22%, rgba(255, 255, 255, 0.18) 0%, transparent 22%);
+      opacity: 1;
+    }
+
+    .cinema-bg--final {
+      background:
+        linear-gradient(180deg, #f6efe4 0%, #f8f3ec 40%, #f0e0cb 100%);
+      background-position: center center;
+      filter: none;
+    }
+
+    .cinema-bg--final::before {
+      background:
+        radial-gradient(circle at 22% 16%, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0.08) 22%, transparent 34%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 248, 240, 0.04) 42%, rgba(243, 229, 208, 0.1) 100%);
+      filter: none;
+      opacity: 1;
+    }
+
+    .cinema-bg--final::after {
+      background:
+        linear-gradient(125deg, rgba(83, 105, 83, 0.07) 6%, transparent 17%, rgba(83, 105, 83, 0.04) 25%, transparent 40%),
+        radial-gradient(ellipse at center 105%, rgba(224, 201, 171, 0.42) 0%, transparent 48%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 249, 241, 0.04) 100%);
+      opacity: 1;
+    }
+
+    .cinema-bg--final .cinema-water {
+      display: none;
+    }
+
+    .cinema-bg--final .cinema-island--far {
+      display: none;
+    }
+
+    .cinema-bg--final .cinema-island--mid {
+      display: none;
+    }
+
+    .cinema-bg--final .cinema-headland {
+      display: none;
+    }
+
+    .cinema-bg--final .cinema-beach,
+    .cinema-bg--final .cinema-wave {
+      display: none;
+    }
+
+    .cinema-bg--final .cinema-frond {
+      fill: rgba(73, 97, 77, 0.05);
+      filter: blur(1.2px);
+    }
+
+    .cinema-bg--final .cinema-frond--left {
+      top: -2rem;
+      left: -5rem;
+      width: min(60vw, 20rem);
+    }
+
+    .cinema-bg--final .cinema-frond--right {
+      top: auto;
+      bottom: -4.5rem;
+      right: -5rem;
+      width: min(56vw, 17rem);
+    }
+
+    .wish-visual {
+      position: relative;
+      width: min(100%, 19.8rem);
+      height: 19.5rem;
+      margin-top: 0.15rem;
+      margin-bottom: -0.1rem;
+      isolation: isolate;
+    }
+
+    .wish-visual::before,
+    .wish-visual::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      transition:
+        opacity 520ms var(--ease),
+        transform 760ms var(--ease);
+    }
+
+    .wish-visual::before {
+      left: 50%;
+      top: 10%;
+      width: 11rem;
+      height: 11rem;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 223, 171, 0.46) 0%, rgba(255, 223, 171, 0.16) 34%, transparent 70%);
+      opacity: 0.82;
+      z-index: 0;
+    }
+
+    .wish-visual::after {
+      inset: 0;
+      background: radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.16), transparent 36%);
+      opacity: 0.7;
+      z-index: 0;
+    }
+
+    .wish-surface-shadow,
+    .wish-surface,
+    .wish-plate-shadow,
+    .wish-plate,
+    .wish-cake-shadow,
+    .wish-cake,
+    .wish-frosting {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .wish-surface-shadow {
+      bottom: 1.55rem;
+      width: 15.8rem;
+      height: 1.28rem;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(118, 95, 70, 0.22) 0%, rgba(118, 95, 70, 0.06) 58%, transparent 74%);
+      z-index: 1;
+    }
+
+    .wish-surface {
+      bottom: 2.2rem;
+      width: 17.4rem;
+      height: 2.05rem;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #efe2d0 0%, #ddc6ab 68%, #c6a381 100%);
+      box-shadow:
+        inset 0 0.12rem 0 rgba(255, 255, 255, 0.34),
+        inset 0 -0.12rem 0 rgba(130, 97, 66, 0.18),
+        0 18px 28px rgba(132, 104, 76, 0.14);
+      z-index: 2;
+    }
+
+    .wish-surface::before,
+    .wish-surface::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+    }
+
+    .wish-surface::before {
+      inset: 0.22rem 1rem auto;
+      height: 0.68rem;
+      background: linear-gradient(180deg, rgba(255, 248, 237, 0.42), rgba(255, 248, 237, 0));
+    }
+
+    .wish-surface::after {
+      bottom: -0.1rem;
+      width: 15.9rem;
+      height: 0.56rem;
+      background: linear-gradient(180deg, rgba(149, 116, 84, 0.44), rgba(149, 116, 84, 0));
+      opacity: 0.24;
+    }
+
+    .wish-plate-shadow {
+      bottom: 4.5rem;
+      width: 9.8rem;
+      height: 0.88rem;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(137, 110, 86, 0.18) 0%, rgba(137, 110, 86, 0.04) 62%, transparent 74%);
+      z-index: 3;
+    }
+
+    .wish-plate {
+      bottom: 4.88rem;
+      width: 11rem;
+      height: 1.24rem;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(240, 234, 225, 0.96) 70%, rgba(214, 205, 194, 0.92) 100%);
+      box-shadow: 0 12px 18px rgba(125, 116, 104, 0.1);
+      z-index: 4;
+    }
+
+    .wish-plate::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 0.34rem;
+      width: 9.1rem;
+      height: 0.42rem;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(234, 227, 218, 0.94));
+    }
+
+    .wish-cake-shadow {
+      bottom: 5.18rem;
+      width: 7.95rem;
+      height: 0.84rem;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(155, 123, 99, 0.22) 0%, rgba(155, 123, 99, 0.04) 62%, transparent 74%);
+      z-index: 5;
+    }
+
+    .wish-cake {
+      bottom: 5.52rem;
+      width: 8.24rem;
+      height: 4.52rem;
+      border-radius: 1.78rem 1.78rem 1.2rem 1.2rem;
+      background: linear-gradient(180deg, #fffaf5 0%, #f7e8dd 54%, #ead3bf 100%);
+      box-shadow:
+        inset 0 0.12rem 0 rgba(255, 255, 255, 0.78),
+        inset 0 -0.36rem 0 rgba(226, 197, 170, 0.32),
+        0 16px 24px rgba(145, 112, 84, 0.14);
+      z-index: 6;
+    }
+
+    .wish-cake::before {
+      content: "";
+      position: absolute;
+      inset: auto 0.94rem 0.82rem;
+      height: 0.28rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(229, 177, 154, 0.82), rgba(246, 210, 186, 0.46));
+      opacity: 0.64;
+    }
+
+    .wish-cake::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 2.42rem;
+      width: 5.98rem;
+      height: 0.46rem;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255, 248, 241, 0.86), rgba(255, 236, 220, 0.3));
+      opacity: 0.48;
+    }
+
+    .wish-frosting {
+      bottom: 9.48rem;
+      width: 7.56rem;
+      height: 1.02rem;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #fffdf9 0%, #fff1e3 100%);
+      box-shadow:
+        inset 0 -0.12rem 0 rgba(241, 220, 199, 0.44),
+        0 0.14rem 0 rgba(255, 255, 255, 0.72);
+      z-index: 7;
+    }
+
+    .wish-cake-top-shadow {
+      bottom: 8.16rem;
+      width: 4.1rem;
+      height: 0.42rem;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(145, 112, 84, 0.16) 0%, rgba(145, 112, 84, 0.03) 64%, transparent 74%);
+      z-index: 8;
+    }
+
+    .wish-cake-top {
+      bottom: 8.56rem;
+      width: 4.62rem;
+      height: 2.22rem;
+      border-radius: 1.08rem 1.08rem 0.86rem 0.86rem;
+      background: linear-gradient(180deg, #fff9f2 0%, #f5e5d7 58%, #ecd2c0 100%);
+      box-shadow:
+        inset 0 0.08rem 0 rgba(255, 255, 255, 0.76),
+        inset 0 -0.26rem 0 rgba(226, 197, 170, 0.28),
+        0 10px 18px rgba(145, 112, 84, 0.08);
+      z-index: 9;
+    }
+
+    .wish-cake-top::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 0.58rem;
+      width: 2.86rem;
+      height: 0.22rem;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(230, 182, 159, 0.76), rgba(246, 210, 186, 0.42));
+      opacity: 0.72;
+    }
+
+    .wish-top-frosting {
+      bottom: 10.42rem;
+      width: 4.16rem;
+      height: 0.74rem;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #fffdf9 0%, #fff0df 100%);
+      box-shadow:
+        inset 0 -0.1rem 0 rgba(241, 220, 199, 0.42),
+        0 0.1rem 0 rgba(255, 255, 255, 0.7);
+      z-index: 10;
+    }
+
+    .wish-cake-ribbon {
+      bottom: 7.28rem;
+      width: 6.18rem;
+      height: 0.42rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(223, 185, 128, 0.96), rgba(247, 228, 185, 0.72), rgba(213, 165, 104, 0.92));
+      box-shadow: 0 0 0 1px rgba(255, 247, 228, 0.26) inset;
+      z-index: 10;
+    }
+
+    .wish-cake-ribbon::before,
+    .wish-cake-ribbon::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      width: 0.58rem;
+      height: 0.86rem;
+      transform: translateY(-24%);
+      background: inherit;
+      clip-path: polygon(50% 100%, 0 0, 100% 0);
+      opacity: 0.92;
+    }
+
+    .wish-cake-ribbon::before {
+      left: 0.84rem;
+    }
+
+    .wish-cake-ribbon::after {
+      right: 0.84rem;
+    }
+
+    .wish-cake-pearls {
+      bottom: 8.12rem;
+      width: 0.34rem;
+      height: 0.34rem;
+      border-radius: 50%;
+      background: #fff7ef;
+      box-shadow:
+        -2.52rem 0 0 #fff7ef,
+        -1.96rem 0 0 #fff7ef,
+        -1.4rem 0 0 #fff7ef,
+        -0.84rem 0 0 #fff7ef,
+        -0.28rem 0 0 #fff7ef,
+        0.28rem 0 0 #fff7ef,
+        0.84rem 0 0 #fff7ef,
+        1.4rem 0 0 #fff7ef,
+        1.96rem 0 0 #fff7ef,
+        2.52rem 0 0 #fff7ef;
+      opacity: 0.88;
+      z-index: 11;
+    }
+
+    .wish-target {
+      position: absolute;
+      left: 50%;
+      bottom: 5.02rem;
+      width: 9.28rem;
+      height: 8.52rem;
+      transform: translateX(-50%);
+      border: 0;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+      z-index: 8;
+    }
+
+    .wish-target:focus-visible {
+      outline: none;
+    }
+
+    .candle-unit {
+      --height: 2rem;
+      --delay: 0s;
+      position: absolute;
+      left: 50%;
+      width: 0.72rem;
+      height: calc(var(--height) + 0.9rem);
+      transform: translateX(-50%);
+      transform-origin: center bottom;
+    }
+
+    .candle-unit--solo {
+      --height: 2.16rem;
+      bottom: 3.92rem;
+    }
+
+    .candle-stick,
+    .candle-wick,
+    .candle-flame,
+    .candle-glow {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .candle-stick {
+      bottom: 0;
+      width: 0.42rem;
+      height: var(--height);
+      border-radius: 999px;
+      background: linear-gradient(180deg, #fbf4ea 0%, #efe3d1 58%, #e3d1bc 100%);
+      box-shadow: 0 0 0 1px rgba(67, 52, 39, 0.04);
+      overflow: hidden;
+    }
+
+    .candle-stick::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(180deg, transparent 0 0.32rem, rgba(226, 176, 150, 0.84) 0.32rem 0.42rem);
+    }
+
+    .candle-wick {
+      bottom: calc(var(--height) - 0.02rem);
+      width: 0.06rem;
+      height: 0.26rem;
+      border-radius: 999px;
+      background: rgba(82, 61, 41, 0.84);
+    }
+
+    .candle-flame {
+      bottom: calc(var(--height) + 0.08rem);
+      width: 0.34rem;
+      height: 0.68rem;
+      border-radius: 52% 52% 60% 60% / 78% 78% 32% 32%;
+      background:
+        radial-gradient(circle at 50% 24%, rgba(255, 253, 244, 0.98) 0%, rgba(255, 247, 208, 0.96) 26%, rgba(255, 208, 110, 0.92) 58%, rgba(242, 134, 49, 0.84) 82%, rgba(242, 134, 49, 0) 100%);
+      box-shadow:
+        0 0 8px rgba(255, 187, 98, 0.22),
+        0 0 14px rgba(255, 155, 70, 0.12);
+      transform-origin: center bottom;
+      filter: saturate(1.06);
+      animation: flameFlicker 1.55s ease-in-out infinite;
+      animation-delay: var(--delay);
+      transition: opacity 420ms ease, transform 520ms ease;
+    }
+
+    .candle-flame::before,
+    .candle-flame::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .candle-flame::before {
+      bottom: 0.12rem;
+      width: 0.14rem;
+      height: 0.28rem;
+      border-radius: 50% 50% 58% 58% / 76% 76% 30% 30%;
+      background: radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 248, 211, 0.96) 58%, rgba(255, 241, 177, 0) 100%);
+      animation: flameCore 1.2s ease-in-out infinite;
+    }
+
+    .candle-flame::after {
+      bottom: -0.04rem;
+      width: 0.52rem;
+      height: 0.76rem;
+      border-radius: 54% 54% 62% 62% / 80% 80% 28% 28%;
+      background: radial-gradient(circle at 50% 34%, rgba(255, 212, 124, 0.34) 0%, rgba(255, 179, 88, 0.14) 56%, rgba(255, 164, 75, 0) 100%);
+      filter: blur(0.04rem);
+      animation: flameHalo 1.8s ease-in-out infinite;
+    }
+
+    .candle-glow {
+      bottom: calc(var(--height) - 0.12rem);
+      width: 1.86rem;
+      height: 1.7rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 225, 156, 0.34) 0%, rgba(255, 214, 130, 0.16) 32%, rgba(255, 194, 107, 0.06) 52%, transparent 74%);
+      filter: blur(0.03rem);
+      animation: glowPulse 2.9s ease-in-out infinite;
+      animation-delay: var(--delay);
+      transition: opacity 420ms ease, transform 520ms ease;
+    }
+
+    .smoke {
+      position: absolute;
+      left: 50%;
+      bottom: 6.34rem;
+      width: 1.1rem;
+      height: 1.1rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168, 171, 173, 0.28) 0%, rgba(168, 171, 173, 0.1) 56%, transparent 76%);
+      opacity: 0;
+      filter: blur(1.9px);
+      transform: translateX(-50%) scale(0.4);
+      transition: opacity 460ms ease, transform 1.34s ease;
+    }
+
+    .smoke--left {
+      left: 44%;
+      transition-delay: 50ms;
+    }
+
+    .smoke--center {
+      left: 50%;
+      width: 1.4rem;
+      height: 1.4rem;
+      transition-delay: 110ms;
+    }
+
+    .smoke--right {
+      left: 56%;
+      transition-delay: 150ms;
+    }
+
+    .balloon-rise {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .balloon {
+      position: absolute;
+      left: var(--x, 50%);
+      bottom: -9rem;
+      width: var(--size, 3.4rem);
+      height: calc(var(--size, 3.4rem) * 1.22);
+      border-radius: 48% 52% 46% 54% / 52% 54% 46% 48%;
+      background:
+        radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.1) 18%, transparent 20%),
+        var(--balloon, linear-gradient(180deg, #f2b9a7 0%, #da8d7a 100%));
+      box-shadow:
+        inset -0.34rem -0.42rem 0 rgba(77, 52, 31, 0.06),
+        0 14px 24px rgba(121, 88, 58, 0.12);
+      opacity: 0;
+      transform: translate3d(0, 1rem, 0) scale(0.82) rotate(var(--rotate, 0deg));
+      transform-origin: center bottom;
+    }
+
+    .balloon::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -0.28rem;
+      width: 0.5rem;
+      height: 0.42rem;
+      transform: translateX(-50%);
+      background: inherit;
+      clip-path: polygon(50% 100%, 0 0, 100% 0);
+      filter: brightness(0.98);
+    }
+
+    .balloon::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 0.08rem);
+      width: 1px;
+      height: var(--string, 4.8rem);
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, rgba(181, 148, 123, 0.58), rgba(181, 148, 123, 0.1));
+      opacity: 0.72;
+    }
+
+    .screen--wish.wish-made .balloon-rise:not(.balloon-rise--ambient) .balloon {
+      animation: balloonLift var(--duration, 5.8s) cubic-bezier(0.24, 0.7, 0.22, 1) forwards;
+      animation-delay: var(--delay, 0s);
+    }
+
+    .balloon-rise--ambient .balloon {
+      opacity: 0.88;
+      animation: balloonLift var(--duration, 14s) linear infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    .screen--wish.wish-made .candle-flame,
+    .screen--wish.wish-made .candle-glow {
+      animation: none;
+      opacity: 0;
+      transform: translateX(-50%) translateY(-0.26rem) scale(0.24);
+    }
+
+    .screen--wish.wish-made .wish-visual::before {
+      opacity: 0.34;
+      transform: translateX(-50%) scale(0.95);
+    }
+
+    .screen--wish.wish-made .wish-visual::after {
+      opacity: 0.42;
+    }
+
+    .screen--wish.wish-made .wish-cake,
+    .screen--wish.wish-made .wish-frosting {
+      filter: saturate(0.96) brightness(0.99);
+    }
+
+    .screen--wish.wish-made .smoke--left {
+      opacity: 0.58;
+      transform: translateX(-50%) translate(-0.28rem, -0.98rem) scale(1.08);
+    }
+
+    .screen--wish.wish-made .smoke--center {
+      opacity: 0.68;
+      transform: translateX(-50%) translateY(-1.18rem) scale(1.22);
+    }
+
+    .screen--wish.wish-made .smoke--right {
+      opacity: 0.52;
+      transform: translateX(-50%) translate(0.32rem, -0.88rem) scale(1.04);
+    }
+
+    .screen--wish.wish-made .cinema-bg--wish::before {
+      opacity: 0.82;
+    }
+
+    .screen--wish.wish-made .wish-button {
+      opacity: 0.68;
+      transform: none;
+    }
+
+    .screen--wish.wish-made .wish-stage::before {
+      opacity: 0.88;
+    }
+
+    .letter-note {
+      position: relative;
+      width: min(100%, 21.1rem);
+      padding: 1.78rem 1.45rem 1.58rem;
+      border-radius: 1.42rem 1.42rem 1.18rem 1.24rem;
+      background:
+        linear-gradient(180deg, rgba(255, 253, 249, 0.99) 0%, rgba(249, 242, 232, 0.99) 100%),
+        repeating-linear-gradient(90deg, rgba(128, 101, 77, 0.018) 0 1px, transparent 1px 5px),
+        repeating-linear-gradient(0deg, rgba(128, 101, 77, 0.022) 0 2px, transparent 2px 8px);
+      border: 1px solid rgba(148, 119, 88, 0.12);
+      box-shadow:
+        0 30px 52px rgba(138, 108, 78, 0.18),
+        0 2px 0 rgba(255, 255, 255, 0.48) inset,
+        inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+      overflow: hidden;
+      text-align: left;
+      transform: rotate(0.45deg);
+    }
+
+    .letter-note::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.54), transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.24), transparent 24%, rgba(213, 189, 164, 0.08) 100%),
+        radial-gradient(circle at top right, rgba(228, 206, 181, 0.22), transparent 24%);
+      pointer-events: none;
+    }
+
+    .letter-note::after {
+      content: "";
+      position: absolute;
+      top: 0.95rem;
+      right: 0.95rem;
+      width: 1.35rem;
+      height: 1.35rem;
+      background: linear-gradient(135deg, rgba(233, 220, 203, 0.9) 0%, rgba(255, 252, 247, 0.96) 66%);
+      clip-path: polygon(0 0, 100% 0, 100% 100%);
+      border-radius: 0 0.16rem 0.24rem 0;
+      box-shadow:
+        -1px 1px 0 rgba(169, 134, 102, 0.1),
+        inset 1px -1px 0 rgba(255, 255, 255, 0.58);
+      opacity: 0.94;
+      pointer-events: none;
+    }
+
+    .letter-note .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.58rem;
+      color: rgba(90, 72, 57, 0.46);
+    }
+
+    .letter-note .eyebrow::after {
+      content: "";
+      width: 2.8rem;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(188, 151, 119, 0.62), rgba(188, 151, 119, 0));
+      transform: translateY(1px);
+    }
+
+    .letter-note h2 {
+      max-width: 9.4ch;
+    }
+
+    .final-copy {
+      position: relative;
+      display: grid;
+      gap: 0.76rem;
+      margin-top: 0.92rem;
+      padding-top: 0.9rem;
+    }
+
+    .final-copy::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3.8rem;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(187, 151, 120, 0.74), rgba(187, 151, 120, 0));
+    }
+
+    .screen--final .button-row {
+      margin-top: 0.15rem;
+    }
+
+    .message-line {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 720ms var(--ease), transform 720ms var(--ease);
+      color: rgba(76, 60, 46, 0.86);
+      font-size: clamp(1rem, 3.8vw, 1.08rem);
+      line-height: 1.72;
+    }
+
+    .screen--final .message-line {
+      font-size: clamp(0.94rem, 3.55vw, 1rem);
+      line-height: 1.62;
+    }
+
+    .message-line.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .message-line--accent {
+      margin-top: 0.25rem;
+      color: rgba(86, 58, 46, 0.96);
+      font-weight: 600;
+    }
+
+    .heart-rise {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .heart-rise--foreground {
+      z-index: 4;
+    }
+
+    .heart {
+      position: absolute;
+      left: var(--x, 50%);
+      bottom: -3.2rem;
+      width: var(--size, 1rem);
+      height: var(--size, 1rem);
+      opacity: 0;
+      transform: translate3d(0, 1rem, 0) rotate(-45deg) scale(0.78);
+      transform-origin: center;
+      border-radius: 0.22rem;
+      filter: blur(var(--blur, 0px)) drop-shadow(0 10px 18px rgba(196, 123, 120, 0.18));
+    }
+
+    .heart-rise--foreground .heart {
+      filter: blur(var(--blur, 0px)) drop-shadow(0 12px 22px rgba(196, 123, 120, 0.24));
+    }
+
+    .heart,
+    .heart::before,
+    .heart::after {
+      background: var(--heart, linear-gradient(180deg, #f3c2bf 0%, #dd8d92 100%));
+    }
+
+    .heart::before,
+    .heart::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    .heart::before {
+      top: -50%;
+      left: 0;
+    }
+
+    .heart::after {
+      top: 0;
+      left: 50%;
+    }
+
+    .screen--final.active .heart {
+      animation: heartRise var(--duration, 15s) linear infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    @keyframes sunBloom {
+      from { transform: scale(0.96); opacity: 0.74; }
+      to { transform: scale(1.05); opacity: 0.94; }
+    }
+
+    @keyframes sunLift {
+      from { transform: translateY(0); }
+      to { transform: translateY(-7px); }
+    }
+
+    @keyframes cloudDrift {
+      from { transform: translateX(-1.5%); }
+      to { transform: translateX(1.5%); }
+    }
+
+    @keyframes lightSweep {
+      from { transform: translateX(-1%) translateY(0); }
+      to { transform: translateX(1%) translateY(-1.2%); }
+    }
+
+    @keyframes waterGlide {
+      from { transform: translate3d(-2%, 0, 0); }
+      to { transform: translate3d(2%, 2%, 0); }
+    }
+
+    @keyframes reefPulse {
+      from { transform: scale(0.98); opacity: 0.76; }
+      to { transform: scale(1.03); opacity: 0.92; }
+    }
+
+    @keyframes shorePulse {
+      from { transform: translateX(0); }
+      to { transform: translateX(-2%); }
+    }
+
+    @keyframes frondSwayLeft {
+      0%, 100% { transform: rotate(18deg); }
+      50% { transform: rotate(20deg); }
+    }
+
+    @keyframes frondSwayRight {
+      0%, 100% { transform: scaleX(-1) rotate(15deg); }
+      50% { transform: scaleX(-1) rotate(17deg); }
+    }
+
+    @keyframes flameFlicker {
+      0%, 100% { transform: translateX(-50%) rotate(-3deg) scale(0.96, 1); }
+      25% { transform: translateX(-50%) rotate(1deg) scale(1.02, 1.06); }
+      50% { transform: translateX(-50%) rotate(3deg) scale(0.98, 1.08); }
+      75% { transform: translateX(-50%) rotate(-1deg) scale(1.03, 0.98); }
+    }
+
+    @keyframes flameCore {
+      0%, 100% { opacity: 0.92; transform: translateX(-50%) scale(0.94, 1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.08, 1.14); }
+    }
+
+    @keyframes flameHalo {
+      0%, 100% { opacity: 0.54; transform: translateX(-50%) scale(0.94, 1); }
+      50% { opacity: 0.76; transform: translateX(-50%) scale(1.08, 1.1); }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.24; transform: translateX(-50%) scale(0.9, 0.94); }
+      50% { opacity: 0.46; transform: translateX(-50%) scale(1.08, 1.02); }
+    }
+
+    @keyframes balloonLift {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 1rem, 0) scale(0.82) rotate(var(--rotate, 0deg));
+      }
+      10% {
+        opacity: 0.96;
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(var(--drift-x, 0rem), var(--rise, -120vh), 0) scale(1.04) rotate(calc(var(--rotate, 0deg) + var(--spin, 10deg)));
+      }
+    }
+
+    @keyframes heartRise {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, 1rem, 0) rotate(-45deg) scale(0.76);
+      }
+      12% {
+        opacity: var(--alpha, 0.8);
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(var(--drift-x, 0.4rem), var(--rise, -104vh), 0) rotate(calc(-45deg + var(--spin, 8deg))) scale(1.06);
+      }
+    }
+
+    @keyframes celebrationFloat {
+      0% {
+        opacity: 0;
+        transform: translate3d(0, -0.4rem, 0) rotate(var(--rotate, 0deg));
+      }
+      12%,
+      68% {
+        opacity: var(--alpha, 0.6);
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(var(--drift-x, 1rem), var(--drift-y, 5rem), 0) rotate(calc(var(--rotate, 0deg) + 90deg));
+      }
+    }
+
+    @keyframes cinemaShimmer {
+      from { transform: translate3d(-2%, 0, 0); }
+      to { transform: translate3d(2%, 1.5%, 0); }
+    }
+
+    @keyframes cinemaReflection {
+      from { transform: scale(0.98); opacity: 0.72; }
+      to { transform: scale(1.03); opacity: 0.92; }
+    }
+
+    @keyframes cinemaWave {
+      from { transform: translateX(0); }
+      to { transform: translateX(-2%); }
+    }
+
+    @keyframes cinemaPalmLeft {
+      0%, 100% { transform: rotate(16deg); }
+      50% { transform: rotate(18deg); }
+    }
+
+    @keyframes cinemaPalmRight {
+      0%, 100% { transform: scaleX(-1) rotate(12deg); }
+      50% { transform: scaleX(-1) rotate(14deg); }
+    }
+
+    @media (min-width: 820px) {
+      .screen {
+        padding:
+          max(2rem, env(safe-area-inset-top))
+          2rem
+          max(2rem, env(safe-area-inset-bottom));
+      }
+
+      .screen__content {
+        width: min(100%, 27rem);
+      }
+
+      .screen__content--dream,
+      .screen__content--final {
+        width: min(100%, 29rem);
+      }
+
+      .screen__content--intro,
+      .screen__content--wish,
+      .screen__content--final {
+        width: min(100%, 24rem);
+      }
+
+      .screen__content::before {
+        inset: -2rem -2rem;
+      }
+
+      .wish-visual {
+        width: min(100%, 22rem);
+        height: 21.2rem;
+      }
+
+      .wish-target {
+        width: 9.7rem;
+        height: 9.1rem;
+      }
+
+      .frond {
+        width: min(24vw, 17rem);
+      }
+
+      .cinema-frond {
+        width: min(25vw, 17rem);
+      }
+    }
+
+    @media (max-height: 820px) {
+      .screen {
+        padding:
+          max(1rem, env(safe-area-inset-top))
+          1.15rem
+          max(1rem, env(safe-area-inset-bottom));
+      }
+
+      .screen__content--intro,
+      .screen__content--wish,
+      .screen__content--final {
+        padding-top: clamp(0.2rem, 1.2vh, 0.8rem);
+      }
+
+      .screen__content--wish {
+        gap: 0.52rem;
+      }
+
+      .wish-visual {
+        transform: scale(0.9);
+        transform-origin: center top;
+        margin-bottom: -1.65rem;
+      }
+
+      .wish-controls,
+      .button-row {
+        gap: 0.62rem;
+      }
+    }
+
+    @media (max-height: 700px) {
+      .wish-visual {
+        transform: scale(0.82);
+        margin-bottom: -2.9rem;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .screen {
+        place-items: start center;
+        padding:
+          max(0.88rem, env(safe-area-inset-top))
+          0.95rem
+          max(1rem, env(safe-area-inset-bottom));
+      }
+
+      .screen__content,
+      .screen__content--intro,
+      .screen__content--wish,
+      .screen__content--dream,
+      .screen__content--final {
+        width: min(100%, 20.35rem);
+      }
+
+      .screen__content {
+        gap: 0.82rem;
+        padding-bottom: 1rem;
+      }
+
+      .screen__content--intro,
+      .screen__content--wish,
+      .screen__content--dream,
+      .screen__content--final {
+        align-self: start;
+        padding-top: clamp(0.45rem, 2.5vh, 1rem);
+      }
+
+      .screen__content--intro {
+        gap: 0.68rem;
+        padding-top: clamp(3.8rem, 13vh, 6.2rem);
+      }
+
+      .screen__content--wish {
+        gap: 0.48rem;
+        padding-top: 0.32rem;
+      }
+
+      .screen__content--dream {
+        gap: 0.72rem;
+        align-self: center;
+        justify-items: center;
+        padding-top: 0;
+        padding-bottom: 0.9rem;
+      }
+
+      .screen__content--final {
+        gap: 0.82rem;
+        align-self: center;
+        padding-top: 0;
+        padding-bottom: 0.9rem;
+      }
+
+      .eyebrow {
+        font-size: 0.66rem;
+        letter-spacing: 0.22em;
+      }
+
+      h1 {
+        font-size: clamp(2.45rem, 11.4vw, 3.25rem);
+      }
+
+      h2 {
+        font-size: clamp(2rem, 9.2vw, 2.8rem);
+      }
+
+      .screen--intro h1 {
+        max-width: 10.8ch;
+        font-size: clamp(2.5rem, 11.8vw, 3.45rem);
+      }
+
+      .lead,
+      .body-copy,
+      .hint,
+      .message-line {
+        font-size: clamp(0.95rem, 3.95vw, 1rem);
+        line-height: 1.58;
+      }
+
+      .button-row,
+      .wish-controls {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.66rem;
+      }
+
+      .button {
+        width: min(100%, 18rem);
+      }
+
+      .screen--intro .button {
+        width: min(100%, 12.2rem);
+      }
+
+      .screen--wish .button {
+        width: min(100%, 15.8rem);
+      }
+
+      .music-toggle {
+        top: max(0.72rem, env(safe-area-inset-top));
+        right: 0.72rem;
+        padding: 0.58rem 0.84rem;
+        font-size: 0.82rem;
+      }
+
+      .wish-visual {
+        width: min(100%, 17.2rem);
+        height: 16rem;
+        transform: scale(0.78);
+        transform-origin: center top;
+        margin-top: 1.05rem;
+        margin-bottom: -1.1rem;
+      }
+
+      .wish-controls {
+        margin-top: 0.14rem;
+      }
+
+      .screen--dream h2,
+      .screen--dream .body-copy {
+        max-width: 16rem;
+        margin-inline: auto;
+        text-align: center;
+      }
+
+      .letter-note {
+        width: min(100%, 19.35rem);
+        padding: 1.46rem 1.14rem 1.26rem;
+        border-radius: 1.18rem;
+        transform: none;
+      }
+
+      .letter-note::after {
+        top: 0.78rem;
+        right: 0.78rem;
+        width: 1.08rem;
+        height: 1.08rem;
+      }
+
+      .letter-note .eyebrow {
+        gap: 0.42rem;
+      }
+
+      .letter-note .eyebrow::after {
+        width: 2rem;
+      }
+
+      .letter-note h2 {
+        max-width: none;
+      }
+
+      .final-copy {
+        gap: 0.56rem;
+        margin-top: 0.76rem;
+        padding-top: 0.74rem;
+      }
+
+      .screen--final .message-line {
+        font-size: clamp(0.96rem, 4.05vw, 1.02rem);
+        line-height: 1.56;
+      }
+
+      .screen--final .button-row {
+        margin-top: 0.28rem;
+      }
+
+      .balloon-rise--ambient .balloon {
+        opacity: 0.72;
+      }
+
+      .heart {
+        width: calc(var(--size, 1rem) * 0.88);
+        height: calc(var(--size, 1rem) * 0.88);
+      }
+
+      .heart-rise--foreground .heart {
+        filter: blur(var(--blur, 0px)) drop-shadow(0 10px 18px rgba(196, 123, 120, 0.18));
+      }
+    }
+
+    @media (max-width: 390px) {
+      .screen {
+        padding:
+          max(0.8rem, env(safe-area-inset-top))
+          0.82rem
+          max(0.92rem, env(safe-area-inset-bottom));
+      }
+
+      .screen__content,
+      .screen__content--intro,
+      .screen__content--wish,
+      .screen__content--dream,
+      .screen__content--final {
+        width: min(100%, 19.1rem);
+      }
+
+      .screen__content {
+        gap: 0.72rem;
+      }
+
+      .screen__content--intro,
+      .screen__content--wish,
+      .screen__content--dream,
+      .screen__content--final {
+        padding-top: 0.35rem;
+      }
+
+      .screen__content--intro {
+        padding-top: clamp(3.2rem, 12vh, 5.2rem);
+      }
+
+      .screen__content--dream,
+      .screen__content--final {
+        padding-top: 0;
+      }
+
+      .wish-visual {
+        transform: scale(0.7);
+        margin-top: 1.2rem;
+        margin-bottom: -1.95rem;
+      }
+
+      .letter-note {
+        width: min(100%, 18.15rem);
+        padding: 1.26rem 1rem 1.12rem;
+      }
+
+      .screen--intro .button {
+        width: min(100%, 11.4rem);
+      }
+
+      .screen--final .message-line {
+        font-size: clamp(0.93rem, 3.95vw, 0.98rem);
+      }
+
+      .music-toggle {
+        padding: 0.52rem 0.72rem;
+        font-size: 0.78rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="music-toggle" id="musicToggle" type="button" aria-pressed="true">Piano On</button>
+  <div class="experience">
+    <main class="screens" aria-live="polite">
+      <section class="screen screen--intro active" data-screen="intro">
+        <div class="scene scene--intro" aria-hidden="true">
+          <div class="intro-stage">
+            <div class="intro-window">
+              <div class="intro-window__sky"></div>
+              <div class="intro-window__clouds animated"></div>
+              <div class="intro-window__sea animated"></div>
+              <div class="intro-window__island intro-window__island--a"></div>
+              <div class="intro-window__island intro-window__island--b"></div>
+              <div class="intro-window__shore"></div>
+              <div class="intro-window__foam animated"></div>
+            </div>
+            <svg class="stage-frond stage-frond--left animated" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <svg class="stage-frond stage-frond--right animated" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <div class="celebration-field celebration-field--intro" aria-hidden="true">
+              <span class="celebration-piece celebration-piece--petal animated" style="--x: 12%; --y: 12%; --size: 0.9rem; --piece: rgba(244, 200, 174, 0.72); --delay: -3s; --duration: 17s; --drift-x: 1rem; --drift-y: 5rem; --rotate: 18deg; --alpha: 0.56;"></span>
+              <span class="celebration-piece celebration-piece--dot animated" style="--x: 22%; --y: 24%; --size: 0.62rem; --piece: rgba(255, 243, 214, 0.82); --delay: -7s; --duration: 15s; --drift-x: 0.6rem; --drift-y: 4.2rem; --rotate: 0deg; --alpha: 0.48;"></span>
+              <span class="celebration-piece celebration-piece--ribbon animated" style="--x: 76%; --y: 12%; --size: 0.84rem; --piece: rgba(230, 198, 136, 0.64); --delay: -2s; --duration: 18s; --drift-x: -0.8rem; --drift-y: 5.6rem; --rotate: 26deg; --alpha: 0.48;"></span>
+              <span class="celebration-piece celebration-piece--petal animated" style="--x: 86%; --y: 28%; --size: 0.72rem; --piece: rgba(240, 185, 172, 0.7); --delay: -10s; --duration: 19s; --drift-x: -0.9rem; --drift-y: 4.8rem; --rotate: -20deg; --alpha: 0.5;"></span>
+            </div>
+            <div class="balloon-rise balloon-rise--ambient" aria-hidden="true">
+              <span class="balloon" style="--x: 8%; --size: 2.25rem; --balloon: linear-gradient(180deg, #f8ddd0 0%, #e5a792 100%); --delay: -3.2s; --duration: 16s; --drift-x: 0.45rem; --rise: -114vh; --rotate: -4deg; --spin: 6deg; --string: 3.8rem;"></span>
+              <span class="balloon" style="--x: 18%; --size: 2.7rem; --balloon: linear-gradient(180deg, #f8e3b9 0%, #dfb069 100%); --delay: -7.8s; --duration: 14.5s; --drift-x: 0.55rem; --rise: -118vh; --rotate: 5deg; --spin: -7deg; --string: 4.1rem;"></span>
+              <span class="balloon" style="--x: 31%; --size: 2.4rem; --balloon: linear-gradient(180deg, #d8ecec 0%, #94c8cb 100%); --delay: -10.1s; --duration: 15.2s; --drift-x: -0.35rem; --rise: -116vh; --rotate: -3deg; --spin: 5deg; --string: 3.9rem;"></span>
+              <span class="balloon" style="--x: 45%; --size: 2.85rem; --balloon: linear-gradient(180deg, #f5dbe7 0%, #d39ab6 100%); --delay: -12.6s; --duration: 17s; --drift-x: 0.4rem; --rise: -120vh; --rotate: 4deg; --spin: -6deg; --string: 4.5rem;"></span>
+              <span class="balloon" style="--x: 61%; --size: 2.35rem; --balloon: linear-gradient(180deg, #ffe3d6 0%, #ebae93 100%); --delay: -5.5s; --duration: 13.8s; --drift-x: -0.32rem; --rise: -112vh; --rotate: -5deg; --spin: 7deg; --string: 3.7rem;"></span>
+              <span class="balloon" style="--x: 74%; --size: 2.62rem; --balloon: linear-gradient(180deg, #edf2bf 0%, #b8cb79 100%); --delay: -9.4s; --duration: 15.8s; --drift-x: 0.38rem; --rise: -117vh; --rotate: 3deg; --spin: -5deg; --string: 4.2rem;"></span>
+              <span class="balloon" style="--x: 86%; --size: 2.28rem; --balloon: linear-gradient(180deg, #f5d2cb 0%, #df9288 100%); --delay: -14s; --duration: 16.4s; --drift-x: -0.48rem; --rise: -119vh; --rotate: 5deg; --spin: -8deg; --string: 4rem;"></span>
+            </div>
+          </div>
+          <div class="cinema-bg cinema-bg--intro">
+            <div class="cinema-water"></div>
+            <div class="cinema-island cinema-island--far"></div>
+            <div class="cinema-island cinema-island--mid"></div>
+            <div class="cinema-headland"></div>
+            <div class="cinema-beach"></div>
+            <div class="cinema-wave cinema-wave--a"></div>
+            <div class="cinema-wave cinema-wave--b"></div>
+            <svg class="cinema-frond cinema-frond--left" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <svg class="cinema-frond cinema-frond--right" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+          </div>
+          <div class="sky animated"></div>
+          <div class="sun-glow animated"></div>
+          <div class="sun-disc animated"></div>
+          <div class="water animated"></div>
+          <div class="reef animated"></div>
+          <div class="island island--far"></div>
+          <div class="island island--mid"></div>
+          <div class="headland"></div>
+          <div class="shore"></div>
+          <div class="foam foam--a animated"></div>
+          <div class="foam foam--b animated"></div>
+          <svg class="frond frond--left animated" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+            <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+            <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+            <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+            <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+            <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+          </svg>
+          <svg class="frond frond--right animated" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+            <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+            <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+            <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+            <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+            <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+          </svg>
+          <div class="celebration-field celebration-field--intro" aria-hidden="true">
+            <span class="celebration-piece celebration-piece--petal animated" style="--x: 8%; --y: 10%; --size: 0.86rem; --piece: rgba(245, 197, 169, 0.72); --delay: -2.5s; --duration: 16s; --drift-x: 1.2rem; --drift-y: 5rem; --rotate: 16deg; --alpha: 0.6;"></span>
+            <span class="celebration-piece celebration-piece--dot animated" style="--x: 19%; --y: 22%; --size: 0.64rem; --piece: rgba(255, 240, 205, 0.82); --delay: -7s; --duration: 18s; --drift-x: 0.6rem; --drift-y: 4.6rem; --rotate: 0deg; --alpha: 0.54; --blur: 0.4px;"></span>
+            <span class="celebration-piece celebration-piece--ribbon animated" style="--x: 74%; --y: 11%; --size: 0.88rem; --piece: rgba(233, 206, 142, 0.68); --delay: -3s; --duration: 15s; --drift-x: -0.8rem; --drift-y: 5.8rem; --rotate: 24deg; --alpha: 0.52;"></span>
+            <span class="celebration-piece celebration-piece--petal animated" style="--x: 84%; --y: 20%; --size: 0.72rem; --piece: rgba(239, 183, 173, 0.7); --delay: -9s; --duration: 17s; --drift-x: -1rem; --drift-y: 4.8rem; --rotate: -18deg; --alpha: 0.56;"></span>
+            <span class="celebration-piece celebration-piece--dot animated" style="--x: 66%; --y: 28%; --size: 0.56rem; --piece: rgba(255, 246, 226, 0.84); --delay: -5s; --duration: 14s; --drift-x: -0.4rem; --drift-y: 4rem; --rotate: 0deg; --alpha: 0.48;"></span>
+            <span class="celebration-piece celebration-piece--petal animated" style="--x: 28%; --y: 16%; --size: 0.7rem; --piece: rgba(228, 214, 157, 0.64); --delay: -1s; --duration: 19s; --drift-x: 0.8rem; --drift-y: 6rem; --rotate: 12deg; --alpha: 0.5;"></span>
+            <span class="celebration-piece celebration-piece--ribbon animated" style="--x: 10%; --y: 34%; --size: 0.72rem; --piece: rgba(244, 214, 182, 0.7); --delay: -10s; --duration: 20s; --drift-x: 1.1rem; --drift-y: 4.2rem; --rotate: -22deg; --alpha: 0.44;"></span>
+          </div>
+        </div>
+
+        <div class="screen__content screen__content--intro">
+          <p class="eyebrow">A Birthday Escape</p>
+          <h1>Today feels soft and sweet… just like you.</h1>
+          <p class="lead">It's your birthday.</p>
+          <div class="button-row">
+            <button class="button" type="button" data-go="1">Begin</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen screen--wish" data-screen="wish">
+        <div class="scene scene--wish" aria-hidden="true">
+          <div class="wish-stage">
+            <div class="wish-niche"></div>
+            <div class="wish-floor"></div>
+            <svg class="stage-frond stage-frond--left animated" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <svg class="stage-frond stage-frond--right animated" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <div class="celebration-field celebration-field--wish" aria-hidden="true">
+              <span class="celebration-piece celebration-piece--petal animated" style="--x: 14%; --y: 12%; --size: 0.8rem; --piece: rgba(240, 192, 165, 0.72); --delay: -3s; --duration: 18s; --drift-x: 0.8rem; --drift-y: 4.8rem; --rotate: 18deg; --alpha: 0.46;"></span>
+              <span class="celebration-piece celebration-piece--dot animated" style="--x: 76%; --y: 18%; --size: 0.56rem; --piece: rgba(255, 243, 214, 0.84); --delay: -8s; --duration: 16s; --drift-x: -0.5rem; --drift-y: 4rem; --rotate: 0deg; --alpha: 0.4;"></span>
+              <span class="celebration-piece celebration-piece--ribbon animated" style="--x: 86%; --y: 32%; --size: 0.74rem; --piece: rgba(227, 190, 127, 0.6); --delay: -5s; --duration: 20s; --drift-x: -0.8rem; --drift-y: 5.1rem; --rotate: 24deg; --alpha: 0.38;"></span>
+            </div>
+            <div class="balloon-rise balloon-rise--ambient" aria-hidden="true">
+              <span class="balloon" style="--x: 5%; --size: 2.18rem; --balloon: linear-gradient(180deg, #f7d8cc 0%, #e3a08d 100%); --delay: -2.8s; --duration: 14.8s; --drift-x: 0.32rem; --rise: -112vh; --rotate: -5deg; --spin: 6deg; --string: 3.8rem;"></span>
+              <span class="balloon" style="--x: 12%; --size: 2.55rem; --balloon: linear-gradient(180deg, #f6e2b9 0%, #dcb067 100%); --delay: -8.6s; --duration: 15.6s; --drift-x: 0.48rem; --rise: -117vh; --rotate: -3deg; --spin: 7deg; --string: 4.2rem;"></span>
+              <span class="balloon" style="--x: 21%; --size: 2.26rem; --balloon: linear-gradient(180deg, #d8ecec 0%, #8fc3c8 100%); --delay: -11.2s; --duration: 16.8s; --drift-x: -0.24rem; --rise: -118vh; --rotate: 4deg; --spin: -5deg; --string: 3.9rem;"></span>
+              <span class="balloon" style="--x: 30%; --size: 2.8rem; --balloon: linear-gradient(180deg, #f4d9e6 0%, #d197b2 100%); --delay: -4.9s; --duration: 17.2s; --drift-x: 0.4rem; --rise: -121vh; --rotate: 5deg; --spin: -7deg; --string: 4.6rem;"></span>
+              <span class="balloon" style="--x: 39%; --size: 2.3rem; --balloon: linear-gradient(180deg, #ffe3d6 0%, #ecb095 100%); --delay: -13.4s; --duration: 14.4s; --drift-x: -0.22rem; --rise: -113vh; --rotate: -4deg; --spin: 6deg; --string: 3.8rem;"></span>
+              <span class="balloon" style="--x: 49%; --size: 2.95rem; --balloon: linear-gradient(180deg, #f7d3c1 0%, #e59c7b 100%); --delay: -9.8s; --duration: 16.4s; --drift-x: -0.52rem; --rise: -120vh; --rotate: -5deg; --spin: 8deg; --string: 4.8rem;"></span>
+              <span class="balloon" style="--x: 58%; --size: 2.16rem; --balloon: linear-gradient(180deg, #edf2bf 0%, #b5cb73 100%); --delay: -6.4s; --duration: 15.1s; --drift-x: 0.3rem; --rise: -114vh; --rotate: 3deg; --spin: -5deg; --string: 3.7rem;"></span>
+              <span class="balloon" style="--x: 66%; --size: 2.68rem; --balloon: linear-gradient(180deg, #dce8b9 0%, #a7be68 100%); --delay: -15.3s; --duration: 17.6s; --drift-x: 0.44rem; --rise: -122vh; --rotate: 4deg; --spin: -7deg; --string: 4.3rem;"></span>
+              <span class="balloon" style="--x: 74%; --size: 2.22rem; --balloon: linear-gradient(180deg, #f8dfb4 0%, #dfa35d 100%); --delay: -1.9s; --duration: 14.9s; --drift-x: -0.3rem; --rise: -112vh; --rotate: -5deg; --spin: 5deg; --string: 3.8rem;"></span>
+              <span class="balloon" style="--x: 82%; --size: 2.44rem; --balloon: linear-gradient(180deg, #f7d1ca 0%, #dd9088 100%); --delay: -10.7s; --duration: 15.9s; --drift-x: -0.4rem; --rise: -116vh; --rotate: 5deg; --spin: -6deg; --string: 4rem;"></span>
+              <span class="balloon" style="--x: 90%; --size: 2.82rem; --balloon: linear-gradient(180deg, #e4eef0 0%, #a3cad0 100%); --delay: -12.9s; --duration: 16.7s; --drift-x: -0.58rem; --rise: -119vh; --rotate: -3deg; --spin: 7deg; --string: 4.6rem;"></span>
+            </div>
+          </div>
+          <div class="cinema-bg cinema-bg--wish">
+            <div class="cinema-water"></div>
+            <div class="cinema-island cinema-island--far"></div>
+            <div class="cinema-island cinema-island--mid"></div>
+            <div class="cinema-headland"></div>
+            <div class="cinema-beach"></div>
+            <div class="cinema-wave cinema-wave--a"></div>
+            <div class="cinema-wave cinema-wave--b"></div>
+            <svg class="cinema-frond cinema-frond--left" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <svg class="cinema-frond cinema-frond--right" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+          </div>
+          <div class="sky animated"></div>
+          <div class="sun-glow animated"></div>
+          <div class="sun-disc animated"></div>
+          <div class="water animated"></div>
+          <div class="reef animated"></div>
+          <div class="island island--far"></div>
+          <div class="island island--mid"></div>
+          <div class="headland"></div>
+          <div class="shore"></div>
+          <div class="foam foam--a animated"></div>
+          <div class="foam foam--b animated"></div>
+          <svg class="frond frond--left animated" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+            <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+            <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+            <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+            <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+            <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+          </svg>
+          <svg class="frond frond--right animated" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+            <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+            <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+            <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+            <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+            <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+          </svg>
+          <div class="celebration-field celebration-field--wish" aria-hidden="true">
+            <span class="celebration-piece celebration-piece--petal animated" style="--x: 14%; --y: 14%; --size: 0.82rem; --piece: rgba(239, 190, 163, 0.76); --delay: -3s; --duration: 17s; --drift-x: 0.9rem; --drift-y: 5.2rem; --rotate: 18deg; --alpha: 0.62;"></span>
+            <span class="celebration-piece celebration-piece--ribbon animated" style="--x: 24%; --y: 24%; --size: 0.86rem; --piece: rgba(226, 193, 130, 0.66); --delay: -8s; --duration: 20s; --drift-x: 0.5rem; --drift-y: 4.8rem; --rotate: -16deg; --alpha: 0.48;"></span>
+            <span class="celebration-piece celebration-piece--dot animated" style="--x: 68%; --y: 16%; --size: 0.62rem; --piece: rgba(255, 242, 211, 0.84); --delay: -2s; --duration: 14s; --drift-x: -0.3rem; --drift-y: 4rem; --rotate: 0deg; --alpha: 0.54;"></span>
+            <span class="celebration-piece celebration-piece--petal animated" style="--x: 80%; --y: 24%; --size: 0.76rem; --piece: rgba(247, 205, 182, 0.7); --delay: -11s; --duration: 18s; --drift-x: -1rem; --drift-y: 5.6rem; --rotate: -20deg; --alpha: 0.56;"></span>
+            <span class="celebration-piece celebration-piece--dot animated" style="--x: 12%; --y: 40%; --size: 0.56rem; --piece: rgba(255, 247, 231, 0.82); --delay: -6s; --duration: 16s; --drift-x: 0.8rem; --drift-y: 3.8rem; --rotate: 0deg; --alpha: 0.44;"></span>
+            <span class="celebration-piece celebration-piece--ribbon animated" style="--x: 88%; --y: 40%; --size: 0.8rem; --piece: rgba(232, 176, 152, 0.64); --delay: -4s; --duration: 19s; --drift-x: -0.7rem; --drift-y: 4.4rem; --rotate: 22deg; --alpha: 0.42;"></span>
+          </div>
+        </div>
+
+        <div class="screen__content screen__content--wish">
+          <p class="eyebrow">Make A Wish</p>
+          <h2>Before anything else... make a wish.</h2>
+          <p class="hint" id="wishHint">Tap the candle or use the button below.</p>
+
+          <div class="wish-visual">
+            <div class="wish-surface-shadow"></div>
+            <div class="wish-surface"></div>
+            <div class="wish-plate-shadow"></div>
+            <div class="wish-plate"></div>
+            <div class="wish-cake-shadow"></div>
+            <div class="wish-cake"></div>
+            <div class="wish-frosting"></div>
+
+            <button class="wish-target" id="wishTarget" type="button" aria-label="Make a wish">
+              <span class="candle-unit candle-unit--solo" aria-hidden="true">
+                <span class="candle-stick"></span>
+                <span class="candle-wick"></span>
+                <span class="candle-glow animated"></span>
+                <span class="candle-flame animated"></span>
+              </span>
+              <span class="smoke smoke--left"></span>
+              <span class="smoke smoke--center"></span>
+              <span class="smoke smoke--right"></span>
+            </button>
+          </div>
+
+          <div class="wish-controls">
+            <button class="button wish-button" id="wishButton" type="button">Blow out the candle</button>
+            <button class="button button--ghost continue" id="wishContinue" type="button" data-go="2">Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen screen--dream" data-screen="dream">
+        <div class="scene scene--dream" aria-hidden="true">
+          <div class="cinema-bg cinema-bg--dream">
+            <video
+              class="dream-video"
+              id="dreamVideo"
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="auto"
+              aria-hidden="true"
+            >
+              <source src="./dream-island.mp4" type="video/mp4" />
+            </video>
+            <div class="cinema-water"></div>
+            <div class="cinema-island cinema-island--far"></div>
+            <div class="cinema-island cinema-island--mid"></div>
+            <div class="cinema-headland"></div>
+            <div class="cinema-beach"></div>
+            <div class="cinema-wave cinema-wave--a"></div>
+            <div class="cinema-wave cinema-wave--b"></div>
+            <svg class="cinema-frond cinema-frond--left" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <svg class="cinema-frond cinema-frond--right" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+          </div>
+          <div class="sky animated"></div>
+          <div class="sun-glow animated"></div>
+          <div class="sun-disc animated"></div>
+          <div class="water animated"></div>
+          <div class="reef animated"></div>
+          <div class="island island--far"></div>
+          <div class="island island--mid"></div>
+          <div class="headland"></div>
+          <div class="shore"></div>
+          <div class="foam foam--a animated"></div>
+          <div class="foam foam--b animated"></div>
+          <svg class="frond frond--left animated" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+            <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+            <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+            <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+            <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+            <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+          </svg>
+          <svg class="frond frond--right animated" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+            <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+            <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+            <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+            <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+            <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+          </svg>
+          <div class="celebration-field celebration-field--final" aria-hidden="true">
+            <span class="celebration-piece celebration-piece--petal animated" style="--x: 12%; --y: 14%; --size: 0.78rem; --piece: rgba(234, 192, 170, 0.66); --delay: -4s; --duration: 18s; --drift-x: 0.8rem; --drift-y: 4.8rem; --rotate: 14deg; --alpha: 0.48;"></span>
+            <span class="celebration-piece celebration-piece--dot animated" style="--x: 20%; --y: 30%; --size: 0.58rem; --piece: rgba(255, 242, 216, 0.86); --delay: -7s; --duration: 14s; --drift-x: 0.4rem; --drift-y: 3.6rem; --rotate: 0deg; --alpha: 0.42;"></span>
+            <span class="celebration-piece celebration-piece--ribbon animated" style="--x: 82%; --y: 16%; --size: 0.84rem; --piece: rgba(223, 191, 136, 0.62); --delay: -2s; --duration: 20s; --drift-x: -0.7rem; --drift-y: 5.4rem; --rotate: 26deg; --alpha: 0.44;"></span>
+            <span class="celebration-piece celebration-piece--petal animated" style="--x: 88%; --y: 34%; --size: 0.74rem; --piece: rgba(243, 207, 187, 0.68); --delay: -10s; --duration: 17s; --drift-x: -0.9rem; --drift-y: 4.6rem; --rotate: -18deg; --alpha: 0.46;"></span>
+            <span class="celebration-piece celebration-piece--dot animated" style="--x: 10%; --y: 66%; --size: 0.52rem; --piece: rgba(255, 247, 231, 0.76); --delay: -3s; --duration: 16s; --drift-x: 0.6rem; --drift-y: 3.2rem; --rotate: 0deg; --alpha: 0.36;"></span>
+            <span class="celebration-piece celebration-piece--ribbon animated" style="--x: 84%; --y: 70%; --size: 0.72rem; --piece: rgba(229, 185, 161, 0.56); --delay: -12s; --duration: 19s; --drift-x: -0.5rem; --drift-y: 3.4rem; --rotate: 18deg; --alpha: 0.36;"></span>
+          </div>
+        </div>
+
+        <div class="screen__content screen__content--dream">
+          <p class="eyebrow">A Soft Hope</p>
+          <h2>I hope one day you’re living somewhere that feels like a dream to you.</h2>
+          <p class="body-copy">Warm, peaceful, and beautiful.</p>
+          <div class="button-row">
+            <button class="button" type="button" data-go="3">Continue</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen screen--final" data-screen="final">
+        <div class="scene scene--final" aria-hidden="true">
+          <div class="final-stage">
+            <div class="final-envelope"></div>
+            <svg class="stage-frond stage-frond--left animated" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <svg class="stage-frond stage-frond--right animated" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <div class="celebration-field celebration-field--final" aria-hidden="true">
+              <span class="celebration-piece celebration-piece--petal animated" style="--x: 10%; --y: 16%; --size: 0.74rem; --piece: rgba(234, 192, 170, 0.64); --delay: -4s; --duration: 19s; --drift-x: 0.7rem; --drift-y: 4.5rem; --rotate: 16deg; --alpha: 0.4;"></span>
+              <span class="celebration-piece celebration-piece--dot animated" style="--x: 80%; --y: 18%; --size: 0.56rem; --piece: rgba(255, 244, 220, 0.84); --delay: -7s; --duration: 15s; --drift-x: -0.5rem; --drift-y: 3.8rem; --rotate: 0deg; --alpha: 0.34;"></span>
+              <span class="celebration-piece celebration-piece--ribbon animated" style="--x: 88%; --y: 34%; --size: 0.74rem; --piece: rgba(223, 191, 136, 0.58); --delay: -2s; --duration: 20s; --drift-x: -0.8rem; --drift-y: 4.8rem; --rotate: 24deg; --alpha: 0.34;"></span>
+            </div>
+          </div>
+          <div class="cinema-bg cinema-bg--final">
+            <div class="cinema-water"></div>
+            <div class="cinema-island cinema-island--far"></div>
+            <div class="cinema-island cinema-island--mid"></div>
+            <div class="cinema-headland"></div>
+            <div class="cinema-beach"></div>
+            <div class="cinema-wave cinema-wave--a"></div>
+            <div class="cinema-wave cinema-wave--b"></div>
+            <svg class="cinema-frond cinema-frond--left" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+            <svg class="cinema-frond cinema-frond--right" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+              <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+              <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+              <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+              <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+              <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+            </svg>
+          </div>
+          <div class="sky animated"></div>
+          <div class="sun-glow animated"></div>
+          <div class="sun-disc animated"></div>
+          <div class="water animated"></div>
+          <div class="reef animated"></div>
+          <div class="island island--far"></div>
+          <div class="island island--mid"></div>
+          <div class="headland"></div>
+          <div class="shore"></div>
+          <div class="foam foam--a animated"></div>
+          <div class="foam foam--b animated"></div>
+          <svg class="frond frond--left animated" viewBox="0 0 200 220" preserveAspectRatio="xMinYMin meet">
+            <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+            <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+            <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+            <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+            <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+          </svg>
+          <svg class="frond frond--right animated" viewBox="0 0 200 220" preserveAspectRatio="xMaxYMin meet">
+            <path d="M22 112C68 84 116 72 186 72C132 98 86 120 32 150Z"></path>
+            <path d="M20 112C58 70 94 42 154 18C116 56 78 92 30 152Z"></path>
+            <path d="M18 118C72 124 120 140 184 176C126 172 76 158 22 128Z"></path>
+            <path d="M24 118C56 148 86 180 126 220C84 196 46 164 24 128Z"></path>
+            <path d="M28 116C46 82 56 52 66 0C68 60 56 92 34 126Z"></path>
+          </svg>
+        </div>
+
+        <div class="screen__content screen__content--final">
+          <article class="letter-note" aria-label="Birthday note">
+            <p class="eyebrow">For You</p>
+            <h2>Happy Birthday</h2>
+            <div class="final-copy">
+              <p class="message-line">Bu yaşın sana, her ge&ccedil;en yıldan daha fazla mutluluk, huzur ve dileklerini ger&ccedil;ekleştirdiğin g&uuml;zel bir yıl getirsin birtanem.</p>
+              <p class="message-line">O g&uuml;zel enerjin ve kalbin en iyi şeyleri fazlasıyla hak ediyor.</p>
+              <p class="message-line">Seninle şans eseri karşılaşmış olsak da, seni tanıdığım ilk andan beri hayatımda olman bana &ccedil;ok iyi geliyor.</p>
+              <p class="message-line">Kalbimde hep &ouml;zel bir yerin olacak, seni seviyorum.</p>
+              <p class="message-line message-line--accent">Doğum g&uuml;n&uuml;n kutlu olsun hayatım, t&uuml;m g&uuml;zellikler senin olsun.</p>
+            </div>
+          </article>
+          <div class="button-row">
+            <button class="button button--ghost" id="replayButton" type="button">Replay</button>
+          </div>
+        </div>
+        <div class="heart-rise heart-rise--foreground" aria-hidden="true">
+          <span class="heart" style="--x: 4%; --size: 0.76rem; --heart: linear-gradient(180deg, #f7d0ca 0%, #dc9196 100%); --delay: -2.1s; --duration: 13.8s; --drift-x: 0.34rem; --rise: -92vh; --spin: 8deg; --alpha: 0.46;"></span>
+          <span class="heart" style="--x: 10%; --size: 0.94rem; --heart: linear-gradient(180deg, #f3d7c7 0%, #e1aa93 100%); --delay: -7.2s; --duration: 14.9s; --drift-x: 0.4rem; --rise: -96vh; --spin: -6deg; --alpha: 0.52;"></span>
+          <span class="heart" style="--x: 16%; --size: 0.68rem; --heart: linear-gradient(180deg, #f8e4d9 0%, #efbaa5 100%); --delay: -11.8s; --duration: 13.1s; --drift-x: -0.24rem; --rise: -88vh; --spin: 6deg; --alpha: 0.4;"></span>
+          <span class="heart" style="--x: 23%; --size: 1.08rem; --heart: linear-gradient(180deg, #f4c8c7 0%, #df858d 100%); --delay: -5.6s; --duration: 15.6s; --drift-x: 0.48rem; --rise: -104vh; --spin: -8deg; --alpha: 0.58;"></span>
+          <span class="heart" style="--x: 30%; --size: 0.78rem; --heart: linear-gradient(180deg, #f6dccb 0%, #e9b08f 100%); --delay: -9.4s; --duration: 14.2s; --drift-x: -0.32rem; --rise: -91vh; --spin: 7deg; --alpha: 0.46;"></span>
+          <span class="heart" style="--x: 37%; --size: 1.18rem; --heart: linear-gradient(180deg, #efcfce 0%, #d89b9e 100%); --delay: -1.6s; --duration: 16.2s; --drift-x: 0.56rem; --rise: -108vh; --spin: 9deg; --alpha: 0.62; --blur: 0.08px;"></span>
+          <span class="heart" style="--x: 44%; --size: 0.86rem; --heart: linear-gradient(180deg, #f8d7d2 0%, #e1999d 100%); --delay: -13.1s; --duration: 14.4s; --drift-x: -0.3rem; --rise: -94vh; --spin: -7deg; --alpha: 0.5;"></span>
+          <span class="heart" style="--x: 50%; --size: 1.24rem; --heart: linear-gradient(180deg, #f4cdc8 0%, #de868d 100%); --delay: -3.8s; --duration: 15.8s; --drift-x: 0.18rem; --rise: -110vh; --spin: 6deg; --alpha: 0.66;"></span>
+          <span class="heart" style="--x: 56%; --size: 0.82rem; --heart: linear-gradient(180deg, #f7dfd2 0%, #e6af96 100%); --delay: -8.8s; --duration: 13.6s; --drift-x: -0.4rem; --rise: -89vh; --spin: 8deg; --alpha: 0.44;"></span>
+          <span class="heart" style="--x: 62%; --size: 1.1rem; --heart: linear-gradient(180deg, #f1d5cf 0%, #d5999d 100%); --delay: -10.6s; --duration: 15.1s; --drift-x: 0.52rem; --rise: -102vh; --spin: -9deg; --alpha: 0.58; --blur: 0.1px;"></span>
+          <span class="heart" style="--x: 69%; --size: 0.72rem; --heart: linear-gradient(180deg, #f8dfcd 0%, #ebb493 100%); --delay: -4.3s; --duration: 13.2s; --drift-x: -0.26rem; --rise: -87vh; --spin: 6deg; --alpha: 0.42;"></span>
+          <span class="heart" style="--x: 75%; --size: 1rem; --heart: linear-gradient(180deg, #f4cdcb 0%, #de8f95 100%); --delay: -12.5s; --duration: 15.7s; --drift-x: 0.46rem; --rise: -100vh; --spin: 8deg; --alpha: 0.56;"></span>
+          <span class="heart" style="--x: 82%; --size: 0.84rem; --heart: linear-gradient(180deg, #f6dcc9 0%, #e4ad90 100%); --delay: -6.2s; --duration: 14.1s; --drift-x: -0.34rem; --rise: -90vh; --spin: -6deg; --alpha: 0.45;"></span>
+          <span class="heart" style="--x: 88%; --size: 1.14rem; --heart: linear-gradient(180deg, #f2cbc9 0%, #dc858d 100%); --delay: -14.7s; --duration: 16.3s; --drift-x: -0.56rem; --rise: -106vh; --spin: 9deg; --alpha: 0.6;"></span>
+          <span class="heart" style="--x: 94%; --size: 0.74rem; --heart: linear-gradient(180deg, #f7ddd2 0%, #ebb39f 100%); --delay: -9.1s; --duration: 13.7s; --drift-x: -0.22rem; --rise: -88vh; --spin: 5deg; --alpha: 0.4;"></span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const screens = Array.from(document.querySelectorAll(".screen"));
+    const navButtons = Array.from(document.querySelectorAll("[data-go]"));
+    const musicToggle = document.getElementById("musicToggle");
+    const replayButton = document.getElementById("replayButton");
+    const wishButton = document.getElementById("wishButton");
+    const wishTarget = document.getElementById("wishTarget");
+    const wishHint = document.getElementById("wishHint");
+    const dreamVideo = document.getElementById("dreamVideo");
+    const wishScreen = document.querySelector(".screen--wish");
+    const finalScreen = document.querySelector(".screen--final");
+    const finalLines = Array.from(document.querySelectorAll(".message-line"));
+    const defaultWishButtonLabel = wishButton ? wishButton.textContent : "";
+    const defaultWishHint = wishHint ? wishHint.textContent : "";
+
+    let activeIndex = 0;
+    let revealTimers = [];
+    let wishMade = false;
+    let audioContext = null;
+    let masterGain = null;
+    let loopTimeout = null;
+    let musicEnabled = true;
+    let musicUnlocked = false;
+    let pianoWave = null;
+    let hammerNoiseBuffer = null;
+
+    const noteFrequencies = {
+      G3: 196.0,
+      C4: 261.63,
+      E4: 329.63,
+      G4: 392.0,
+      A4: 440.0,
+      B4: 493.88,
+      C5: 523.25,
+      D5: 587.33,
+      E5: 659.25,
+      F5: 698.46,
+      G5: 783.99
+    };
+
+    const birthdayMelody = [
+      { note: "G4", beats: 0.75 },
+      { note: "G4", beats: 0.25 },
+      { note: "A4", beats: 1 },
+      { note: "G4", beats: 1 },
+      { note: "C5", beats: 1 },
+      { note: "B4", beats: 2 },
+      { note: "G4", beats: 0.75 },
+      { note: "G4", beats: 0.25 },
+      { note: "A4", beats: 1 },
+      { note: "G4", beats: 1 },
+      { note: "D5", beats: 1 },
+      { note: "C5", beats: 2 },
+      { note: "G4", beats: 0.75 },
+      { note: "G4", beats: 0.25 },
+      { note: "G5", beats: 1 },
+      { note: "E5", beats: 1 },
+      { note: "C5", beats: 1 },
+      { note: "B4", beats: 1 },
+      { note: "A4", beats: 2 },
+      { note: "F5", beats: 0.75 },
+      { note: "F5", beats: 0.25 },
+      { note: "E5", beats: 1 },
+      { note: "C5", beats: 1 },
+      { note: "D5", beats: 1 },
+      { note: "C5", beats: 2 }
+    ];
+
+    const birthdayHarmony = [
+      { note: "C4", startBeat: 0, beats: 3.25, velocity: 0.16 },
+      { note: "E4", startBeat: 0, beats: 3.25, velocity: 0.11 },
+      { note: "G3", startBeat: 3.25, beats: 3.25, velocity: 0.14 },
+      { note: "C4", startBeat: 6.5, beats: 3.25, velocity: 0.16 },
+      { note: "E4", startBeat: 6.5, beats: 3.25, velocity: 0.11 },
+      { note: "G3", startBeat: 9.75, beats: 3.25, velocity: 0.14 },
+      { note: "C4", startBeat: 13, beats: 3.5, velocity: 0.16 },
+      { note: "G3", startBeat: 16.5, beats: 3.25, velocity: 0.15 },
+      { note: "C4", startBeat: 19.75, beats: 5.25, velocity: 0.16 }
+    ];
+
+    function updateMusicToggle() {
+      if (!musicToggle) {
+        return;
+      }
+
+      musicToggle.textContent = musicEnabled ? "Piano On" : "Piano Off";
+      musicToggle.setAttribute("aria-pressed", String(musicEnabled));
+      musicToggle.classList.toggle("is-muted", !musicEnabled);
+    }
+
+    function getPianoWave() {
+      if (!audioContext) {
+        return null;
+      }
+
+      if (pianoWave) {
+        return pianoWave;
+      }
+
+      const real = new Float32Array([0, 0.96, 0.48, 0.2, 0.11, 0.06, 0.03]);
+      const imag = new Float32Array(real.length);
+      pianoWave = audioContext.createPeriodicWave(real, imag, { disableNormalization: false });
+      return pianoWave;
+    }
+
+    function getHammerNoiseBuffer() {
+      if (!audioContext) {
+        return null;
+      }
+
+      if (hammerNoiseBuffer) {
+        return hammerNoiseBuffer;
+      }
+
+      const length = Math.floor(audioContext.sampleRate * 0.09);
+      hammerNoiseBuffer = audioContext.createBuffer(1, length, audioContext.sampleRate);
+      const channel = hammerNoiseBuffer.getChannelData(0);
+
+      for (let index = 0; index < length; index += 1) {
+        const falloff = 1 - index / length;
+        channel[index] = (Math.random() * 2 - 1) * falloff;
+      }
+
+      return hammerNoiseBuffer;
+    }
+
+    function createPianoVoice(frequency, startTime, duration, velocity = 0.22) {
+      if (!audioContext || !masterGain) {
+        return;
+      }
+
+      const bodyOscillator = audioContext.createOscillator();
+      const warmthOscillator = audioContext.createOscillator();
+      const bodyFilter = audioContext.createBiquadFilter();
+      const airFilter = audioContext.createBiquadFilter();
+      const bodyGain = audioContext.createGain();
+      const warmthGain = audioContext.createGain();
+
+      bodyOscillator.setPeriodicWave(getPianoWave());
+      warmthOscillator.type = "sine";
+      bodyOscillator.frequency.setValueAtTime(frequency, startTime);
+      warmthOscillator.frequency.setValueAtTime(frequency * 2, startTime);
+      warmthOscillator.detune.setValueAtTime(2.5, startTime);
+
+      bodyFilter.type = "lowpass";
+      bodyFilter.frequency.setValueAtTime(3200, startTime);
+      bodyFilter.frequency.exponentialRampToValueAtTime(1650, startTime + Math.max(0.48, duration * 0.86));
+      bodyFilter.Q.setValueAtTime(0.72, startTime);
+
+      airFilter.type = "lowpass";
+      airFilter.frequency.setValueAtTime(2200, startTime);
+      airFilter.frequency.exponentialRampToValueAtTime(1200, startTime + Math.max(0.4, duration * 0.74));
+      airFilter.Q.setValueAtTime(0.45, startTime);
+
+      const attack = 0.01;
+      const bloom = startTime + 0.11;
+      const sustain = Math.max(startTime + 0.32, startTime + duration * 0.9);
+      const decay = Math.max(1.2, duration * 1.75);
+      const stopTime = startTime + duration + 1.8;
+
+      bodyGain.gain.setValueAtTime(0.0001, startTime);
+      bodyGain.gain.linearRampToValueAtTime(velocity * 1.08, startTime + attack);
+      bodyGain.gain.exponentialRampToValueAtTime(Math.max(velocity * 0.34, 0.0002), bloom);
+      bodyGain.gain.exponentialRampToValueAtTime(0.0001, startTime + decay);
+
+      warmthGain.gain.setValueAtTime(0.0001, startTime);
+      warmthGain.gain.linearRampToValueAtTime(velocity * 0.22, startTime + attack * 1.2);
+      warmthGain.gain.exponentialRampToValueAtTime(Math.max(velocity * 0.08, 0.00015), sustain);
+      warmthGain.gain.exponentialRampToValueAtTime(0.0001, startTime + decay * 0.88);
+
+      bodyOscillator.connect(bodyFilter);
+      bodyFilter.connect(bodyGain);
+      warmthOscillator.connect(airFilter);
+      airFilter.connect(warmthGain);
+      bodyGain.connect(masterGain);
+      warmthGain.connect(masterGain);
+
+      const hammerBuffer = getHammerNoiseBuffer();
+
+      if (hammerBuffer) {
+        const hammerSource = audioContext.createBufferSource();
+        const hammerFilter = audioContext.createBiquadFilter();
+        const hammerGain = audioContext.createGain();
+
+        hammerSource.buffer = hammerBuffer;
+        hammerFilter.type = "bandpass";
+        hammerFilter.frequency.setValueAtTime(Math.min(Math.max(frequency * 6, 1200), 3200), startTime);
+        hammerFilter.Q.setValueAtTime(0.8, startTime);
+
+        hammerGain.gain.setValueAtTime(0.0001, startTime);
+        hammerGain.gain.linearRampToValueAtTime(velocity * 0.12, startTime + 0.008);
+        hammerGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.075);
+
+        hammerSource.connect(hammerFilter);
+        hammerFilter.connect(hammerGain);
+        hammerGain.connect(masterGain);
+
+        hammerSource.start(startTime);
+        hammerSource.stop(startTime + 0.09);
+      }
+
+      bodyOscillator.start(startTime);
+      warmthOscillator.start(startTime);
+      bodyOscillator.stop(stopTime);
+      warmthOscillator.stop(stopTime);
+    }
+
+    function clearMusicLoop() {
+      if (loopTimeout) {
+        window.clearTimeout(loopTimeout);
+        loopTimeout = null;
+      }
+    }
+
+    function scheduleBirthdaySong() {
+      if (!audioContext || !masterGain || !musicEnabled) {
+        return;
+      }
+
+      const secondsPerBeat = 0.66;
+      const startTime = audioContext.currentTime + 0.08;
+      let beatCursor = 0;
+
+      birthdayMelody.forEach(({ note, beats }) => {
+        createPianoVoice(
+          noteFrequencies[note],
+          startTime + beatCursor * secondsPerBeat,
+          beats * secondsPerBeat,
+          0.22
+        );
+        beatCursor += beats;
+      });
+
+      birthdayHarmony.forEach(({ note, startBeat, beats, velocity }) => {
+        createPianoVoice(
+          noteFrequencies[note],
+          startTime + startBeat * secondsPerBeat,
+          beats * secondsPerBeat,
+          velocity
+        );
+      });
+
+      const loopLengthMs = beatCursor * secondsPerBeat * 1000 + 2600;
+      clearMusicLoop();
+      loopTimeout = window.setTimeout(() => {
+        if (musicEnabled) {
+          scheduleBirthdaySong();
+        }
+      }, loopLengthMs);
+    }
+
+    async function unlockMusic() {
+      if (musicUnlocked) {
+        if (audioContext && audioContext.state === "suspended") {
+          try {
+            await audioContext.resume();
+          } catch (error) {
+            return;
+          }
+        }
+
+        if (musicEnabled && !loopTimeout) {
+          scheduleBirthdaySong();
+        }
+        return;
+      }
+
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+      if (!AudioContextClass) {
+        return;
+      }
+
+      audioContext = new AudioContextClass();
+      masterGain = audioContext.createGain();
+      masterGain.gain.value = 0.11;
+      masterGain.connect(audioContext.destination);
+
+      try {
+        await audioContext.resume();
+      } catch (error) {
+        return;
+      }
+
+      musicUnlocked = true;
+
+      if (musicEnabled) {
+        scheduleBirthdaySong();
+      }
+    }
+
+    async function toggleMusic() {
+      musicEnabled = !musicEnabled;
+      updateMusicToggle();
+
+      if (!musicEnabled) {
+        clearMusicLoop();
+        if (audioContext && audioContext.state === "running") {
+          try {
+            await audioContext.suspend();
+          } catch (error) {
+            return;
+          }
+        }
+        return;
+      }
+
+      await unlockMusic();
+    }
+
+    function clearFinalTimers() {
+      revealTimers.forEach((timer) => window.clearTimeout(timer));
+      revealTimers = [];
+    }
+
+    function resetFinalLines() {
+      finalLines.forEach((line) => line.classList.remove("is-visible"));
+    }
+
+    function revealFinalLines() {
+      resetFinalLines();
+      finalLines.forEach((line, index) => {
+        const timer = window.setTimeout(() => {
+          line.classList.add("is-visible");
+        }, 220 + index * 380);
+        revealTimers.push(timer);
+      });
+    }
+
+    function resetWish() {
+      wishMade = false;
+      wishScreen.classList.remove("wish-made");
+      if (wishButton) {
+        wishButton.textContent = defaultWishButtonLabel;
+      }
+      if (wishHint) {
+        wishHint.textContent = defaultWishHint;
+      }
+    }
+
+    function makeWish() {
+      if (wishMade) {
+        return;
+      }
+
+      wishMade = true;
+      wishScreen.classList.add("wish-made");
+      if (wishButton) {
+        wishButton.textContent = "A soft wish";
+      }
+      if (wishHint) {
+        wishHint.textContent = "Let it stay with you for a moment.";
+      }
+    }
+
+    function syncDreamVideo() {
+      if (!dreamVideo) {
+        return;
+      }
+
+      const isDreamScreen = screens[activeIndex]?.dataset.screen === "dream";
+
+      if (!isDreamScreen) {
+        dreamVideo.pause();
+        dreamVideo.currentTime = 0;
+        return;
+      }
+
+      const playPromise = dreamVideo.play();
+
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {});
+      }
+    }
+
+    function goToScreen(index) {
+      if (index < 0 || index >= screens.length || index === activeIndex) {
+        return;
+      }
+
+      clearFinalTimers();
+      resetFinalLines();
+
+      screens.forEach((screen, screenIndex) => {
+        screen.classList.toggle("active", screenIndex === index);
+      });
+
+      activeIndex = index;
+      syncDreamVideo();
+
+      if (screens[index] === finalScreen) {
+        revealFinalLines();
+      }
+    }
+
+    navButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const nextIndex = Number(button.dataset.go);
+        if (Number.isFinite(nextIndex)) {
+          goToScreen(nextIndex);
+        }
+      });
+    });
+
+    wishButton.addEventListener("click", makeWish);
+    wishTarget.addEventListener("click", makeWish);
+    musicToggle.addEventListener("click", toggleMusic);
+
+    replayButton.addEventListener("click", () => {
+      clearFinalTimers();
+      resetFinalLines();
+      resetWish();
+      screens.forEach((screen, index) => {
+        screen.classList.toggle("active", index === 0);
+      });
+      activeIndex = 0;
+      syncDreamVideo();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowRight" && activeIndex < screens.length - 1) {
+        if (activeIndex === 1 && !wishMade) {
+          return;
+        }
+        goToScreen(activeIndex + 1);
+      }
+
+      if (event.key === "ArrowLeft" && activeIndex > 0) {
+        goToScreen(activeIndex - 1);
+      }
+
+      if ((event.key === "Enter" || event.key === " ") && activeIndex === 1 && !wishMade) {
+        event.preventDefault();
+        makeWish();
+      }
+    });
+
+    document.addEventListener(
+      "pointerdown",
+      () => {
+        if (musicEnabled) {
+          unlockMusic();
+        }
+      },
+      { once: true }
+    );
+
+    document.addEventListener(
+      "keydown",
+      () => {
+        if (musicEnabled) {
+          unlockMusic();
+        }
+      },
+      { once: true }
+    );
+
+    document.addEventListener("visibilitychange", () => {
+      if (!audioContext) {
+        return;
+      }
+
+      if (document.hidden) {
+        clearMusicLoop();
+        if (audioContext.state === "running") {
+          audioContext.suspend().catch(() => {});
+        }
+        return;
+      }
+
+      if (musicEnabled) {
+        unlockMusic();
+      }
+    });
+
+    updateMusicToggle();
+    syncDreamVideo();
+  </script>
+</body>
+</html>
